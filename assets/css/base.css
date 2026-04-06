@@ -322,3 +322,27 @@ img { max-width: 100%; }
   .form-row { grid-template-columns: 1fr; }
   .page-title { font-size: 19px; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   TOKEN BRIDGE — Hokuto project.css usa questi nomi
+   Mappati sui token di Agency Hub per compatibilità.
+═══════════════════════════════════════════════════════ */
+:root {
+  --surface:      var(--bg-surface);
+  --surface2:     rgba(255,255,255,0.032);
+  --surface3:     rgba(255,255,255,0.06);
+  --border:       var(--glass-border);
+  --border2:      rgba(255,255,255,0.11);
+  --text:         var(--text-100);
+  --text2:        var(--text-60);
+  --text3:        var(--text-35);
+  --muted:        var(--text-20);
+  --danger:       var(--accent-red);
+  --warn:         var(--accent-amber);
+  --success:      var(--accent-mint);
+  --info:         #38bdf8;
+  --accent-blue-light: var(--accent-blue-soft);
+  --radius:       var(--r-xl);
+  --radius-sm:    var(--r-lg);
+  --radius-xs:    var(--r-md);
+}

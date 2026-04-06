@@ -267,26 +267,27 @@
 <script>
 // ── INIT ─────────────────────────────────────────────────
 (function init() {
-  var progetti   = store.get('hub_progetti', []);
+  var progetti   = (function(){ try { var v=localStorage.getItem('evolve_pm_projects'); return v?JSON.parse(v):[]; } catch(e){ return []; } })();
   var interventi = store.get('hub_interventi', []);
   var schede     = store.get('hub_stats', {}).schede || 0;
 
-  var progettiAttivi   = progetti.filter(function(p) { return p.status !== 'completato'; });
+  var progettiAttivi   = progetti.filter(function(p) { return p.status !== 'archiviato' && p.status !== 'consegnato'; });
   var interventiAperti = interventi.filter(function(i) { return i.status !== 'done'; });
 
-  document.getElementById('stat-progetti').textContent   = progettiAttivi.length;
+  var hokutoAttivi = progettiHokuto.filter(function(p){ return p.status === 'attivo'; });
+  document.getElementById('stat-progetti').textContent = hokutoAttivi.length;
   document.getElementById('stat-interventi').textContent = interventiAperti.length;
   document.getElementById('stat-schede').textContent     = schede;
 
-  document.getElementById('sb-badge-progetti').textContent   = progettiAttivi.length;
+  document.getElementById('sb-badge-progetti').textContent = hokutoAttivi.length;
   document.getElementById('sb-badge-interventi').textContent = interventiAperti.length;
-  document.getElementById('cnt-progetti').textContent        = progettiAttivi.length;
+  document.getElementById('cnt-progetti').textContent = hokutoAttivi.length;
   document.getElementById('cnt-interventi').textContent      = interventiAperti.length;
 
   updateSidebarBadges();
 
   // Render contenuto locale immediato
-  renderProgettiAttivi(progettiAttivi);
+  renderProgettiAttivi(hokutoAttivi.length ? hokutoAttivi : progettiAttivi);
   renderInterventiAperti(interventiAperti);
   renderActivity();
 
@@ -294,17 +295,19 @@
   if (typeof GitHubSync !== 'undefined' && GitHubSync.isConfigured()) {
     GitHubSync.pullAll().then(function(ok) {
       if (ok) {
-        var p2 = store.get('hub_progetti', []);
+        var p2 = (function(){ try { var v=localStorage.getItem('evolve_pm_projects'); return v?JSON.parse(v):[]; } catch(e){ return []; } })();
         var i2 = store.get('hub_interventi', []);
-        var progettiAttivi2   = p2.filter(function(p) { return p.status !== 'completato'; });
+        var progettiAttivi2   = p2.filter(function(p) { return p.status !== 'archiviato' && p.status !== 'consegnato'; });
         var interventiAperti2 = i2.filter(function(i) { return i.status !== 'done'; });
-        document.getElementById('stat-progetti').textContent        = progettiAttivi2.length;
+        var hokutoAll2 = JSON.parse(localStorage.getItem('evolve_pm_projects')||'[]');
+        var hokutoAttivi2 = hokutoAll2.filter(function(p){ return p.status==='attivo'; });
+        document.getElementById('stat-progetti').textContent = hokutoAttivi2.length;
         document.getElementById('stat-interventi').textContent      = interventiAperti2.length;
-        document.getElementById('sb-badge-progetti').textContent    = progettiAttivi2.length;
+        document.getElementById('sb-badge-progetti').textContent = hokutoAttivi2.length;
         document.getElementById('sb-badge-interventi').textContent  = interventiAperti2.length;
-        document.getElementById('cnt-progetti').textContent         = progettiAttivi2.length;
+        document.getElementById('cnt-progetti').textContent = hokutoAttivi2.length;
         document.getElementById('cnt-interventi').textContent       = interventiAperti2.length;
-        renderProgettiAttivi(progettiAttivi2);
+        renderProgettiAttivi(hokutoAttivi2.length ? hokutoAttivi2 : progettiAttivi2);
         renderInterventiAperti(interventiAperti2);
         renderActivity();
       }
@@ -315,21 +318,29 @@
 // ── RENDER PROGETTI ───────────────────────────────────────
 function renderProgettiAttivi(list) {
   if (!list || !list.length) return;
-  // Usa PHASE_NAMES da core.js (sincronizzate con la checklist progetti)
+  // Struttura dati hokuto: checklist è un oggetto {itemId: bool}
   document.getElementById('progetti-list').innerHTML = list.slice(0,3).map(function(p) {
-    var done  = (p.checklist||[]).filter(function(c) { return c.done; }).length;
-    var total = (p.checklist||[]).length || PHASE_NAMES.length;
+    // Calcola progresso checklist hokuto (oggetto key:bool)
+    var checkObj = p.checklist || {};
+    var keys  = Object.keys(checkObj);
+    var total = keys.length || 1;
+    var done  = keys.filter(function(k){ return checkObj[k]; }).length;
     var pct   = Math.round(done / total * 100);
-    var phase = PHASE_NAMES[Math.min(done, PHASE_NAMES.length - 1)];
-    var initials = (p.name||'?').split(' ').map(function(w) { return w[0]; }).join('').slice(0,2).toUpperCase();
-    return '<a class="proj-home-card" href="progetti/scheda.html?id=' + p.id + '">' +
+    // Dominio da brief.scheda o access.url
+    var domain = (p.brief && p.brief.scheda && p.brief.scheda.dominio)
+      || (p.access && p.access.url ? p.access.url.replace('https://','').replace('/wp-admin','') : '')
+      || '';
+    var initials = (p.name||'?').split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+    // Link diretto alla scheda progetto nel modulo hokuto
+    var href = 'progetti/index.html#project/' + p.id + '/brief';
+    return '<a class="proj-home-card" href="' + href + '">' +
       '<div class="proj-logo">' +
-        (p.logo ? '<img src="' + p.logo + '" alt="' + esc(p.name) + '"/>' : initials) +
+        (p.logo ? '<img src="' + p.logo + '" style="width:100%;height:100%;object-fit:contain;padding:4px;border-radius:8px;" alt=""/>' : initials) +
       '</div>' +
       '<div class="proj-info">' +
         '<div class="proj-name">' + esc(p.name) + '</div>' +
-        '<div class="proj-domain">' + esc(p.domain||'') + '</div>' +
-        '<div class="proj-phase">⚡ ' + esc(phase) + '</div>' +
+        '<div class="proj-domain">' + esc(domain) + '</div>' +
+        '<div class="proj-phase">⚡ Brief & Setup</div>' +
         '<div class="proj-bar-wrap">' +
           '<div class="proj-bar"><div class="proj-bar-fill" style="width:' + pct + '%"></div></div>' +
           '<div class="proj-pct">' + done + '/' + total + ' fasi</div>' +

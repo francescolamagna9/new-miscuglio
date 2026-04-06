@@ -198,6 +198,21 @@
 }
 #progetti-module .add-project-card svg { width: 24px; height: 24px; }
 
+/* ── Project view: rimuovi padding da main-content, lo gestiamo noi ── */
+/* Quando siamo nella scheda progetto, #progetti-module non ha padding top */
+#view-project.active ~ * { }
+
+/* La view-project occupa tutto: niente padding sopra */
+#view-project.pm-view.active {
+  margin: -38px -34px 0;
+}
+@media (max-width: 900px) {
+  #view-project.pm-view.active { margin: -32px -18px 0; }
+}
+@media (max-width: 768px) {
+  #view-project.pm-view.active { margin: -70px -14px 0; }
+}
+
 /* ── Project header (scheda) ────────────────────────────── */
 #project-header {
   background: rgba(8,12,18,0.97);
@@ -207,14 +222,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  margin: -38px -34px 0;    /* annulla il padding di .main-content */
-  padding: 0 34px;
-}
-@media (max-width: 900px) {
-  #project-header { margin: -32px -18px 0; padding: 0 18px; }
-}
-@media (max-width: 768px) {
-  #project-header { margin: -70px -14px 0; padding: 0 14px; }
+  padding: 0;
 }
 
 /* ── Tab nav ────────────────────────────────────────────── */
@@ -222,9 +230,13 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0;
+  padding: 0 34px;
   border-bottom: 1px solid var(--glass-border);
-  background: transparent;
+  background: rgba(8,12,18,0.95);
+  backdrop-filter: blur(20px);
+  position: sticky;
+  top: 0;   /* si posiziona sotto project-header grazie all'ordine DOM */
+  z-index: 99;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -259,7 +271,17 @@
 }
 
 /* ── Tab content ────────────────────────────────────────── */
-#project-content { }
+#project-content {
+  padding: 0 34px 80px;
+}
+@media (max-width: 900px) {
+  #project-tabs  { padding: 0 18px; }
+  #project-content { padding: 0 18px 80px; }
+}
+@media (max-width: 768px) {
+  #project-tabs  { padding: 0 14px; }
+  #project-content { padding: 0 14px 80px; }
+}
 #progetti-module .tab-pane          { display: none; }
 #progetti-module .tab-pane.active   { display: block; }
 
@@ -518,4 +540,93 @@
 @media (max-width: 768px) {
   #progetti-module .projects-grid { grid-template-columns: 1fr; }
   #progetti-module .form-row      { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════
+   MODAL NUOVO PROGETTO — stile webappfra arricchito
+═══════════════════════════════════════════════ */
+
+/* Logo upload */
+.logo-upload-wrap {
+  display: flex; align-items: center; gap: 13px;
+}
+.logo-preview {
+  width: 60px; height: 60px; border-radius: var(--r-md); flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-mint));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 19px; color: rgba(255,255,255,0.65);
+  overflow: hidden; cursor: pointer;
+  border: 2px dashed rgba(255,255,255,0.13);
+  transition: border-color var(--transition);
+}
+.logo-preview:hover { border-color: rgba(59,130,246,0.48); }
+.logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.logo-upload-hint { font-size: 12px; color: var(--text-60); line-height: 1.6; }
+
+/* Tipo pills */
+.tipo-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+}
+.tipo-btn {
+  padding: 9px 8px; border-radius: var(--r-md);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  color: var(--text-60); cursor: pointer;
+  transition: all var(--transition);
+  font-size: 13px; font-weight: 500; text-align: center;
+}
+.tipo-btn.active,
+.tipo-btn:hover {
+  background: rgba(59,130,246,0.12);
+  color: var(--accent-blue-soft);
+  border-color: rgba(59,130,246,0.28);
+}
+
+/* Brief/Project Bible upload */
+.brief-upload {
+  border: 2px dashed rgba(59,130,246,0.22); border-radius: var(--r-lg);
+  padding: 24px; text-align: center; cursor: pointer;
+  background: rgba(59,130,246,0.025);
+  transition: all var(--transition);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.brief-upload:hover, .brief-upload.over {
+  border-color: rgba(59,130,246,0.50);
+  background: rgba(59,130,246,0.06);
+}
+.brief-upload-icon { font-size: 26px; opacity: .35; }
+.brief-upload-text { font-size: 14px; color: var(--text-60); font-weight: 500; }
+.brief-upload-hint { font-size: 11px; color: var(--text-35); }
+
+.brief-loaded {
+  display: none; align-items: center; gap: 11px;
+  background: rgba(16,185,129,0.07);
+  border: 1px solid rgba(16,185,129,0.20);
+  border-radius: var(--r-lg); padding: 11px 15px; margin-top: 7px;
+}
+.brief-loaded-icon   { font-size: 18px; }
+.brief-loaded-name   { font-size: 13px; color: var(--accent-mint-soft); font-weight: 600; flex: 1; }
+.brief-loaded-remove {
+  font-size: 12px; color: var(--text-35);
+  cursor: pointer; transition: color var(--transition);
+}
+.brief-loaded-remove:hover { color: var(--accent-red-soft); }
+
+/* AI parsing spinner */
+.ai-parsing { display: none; text-align: center; padding: 18px; }
+.ai-parsing.visible { display: block; }
+.ai-parsing-text { font-size: 13px; color: var(--text-60); margin-top: 10px; }
+
+/* dots loader */
+.dots { display: inline-flex; gap: 5px; align-items: center; }
+.dots span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-blue-soft);
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+.dots span:nth-child(2) { animation-delay: .2s; }
+.dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dotBounce {
+  0%,80%,100% { transform: scale(0.65); opacity: .35; }
+  40% { transform: scale(1); opacity: 1; }
 }

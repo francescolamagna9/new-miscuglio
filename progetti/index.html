@@ -203,37 +203,84 @@
      MODALI (globali, fuori scope)
 ════════════════════════════════ -->
 
-<!-- Nuovo Progetto -->
+<!-- Nuovo Progetto — form ricco webappfra style -->
 <div class="modal-overlay" id="modal-new-project">
-  <div class="modal">
+  <div class="modal modal-lg">
     <div class="modal-header">
       <div>
         <p class="modal-title">Nuovo Progetto</p>
-        <p>Crea un nuovo progetto e opzionalmente carica il brief.</p>
+        <p>Compila i dati principali. Puoi aggiungere tutto il resto dalla scheda.</p>
       </div>
       <button class="modal-close" onclick="closeNewProjectModal()">✕</button>
     </div>
+
+    <!-- LOGO -->
     <div class="form-group">
-      <label class="form-label">Nome Progetto <span style="color:#93c5fd">*</span></label>
-      <input class="form-input" id="new-project-name" type="text"
-        placeholder="es. Taglia e Cuci Express"
-        onkeydown="if(event.key==='Enter') document.getElementById('new-project-client').focus()">
+      <label class="form-label">Logo Progetto</label>
+      <div class="logo-upload-wrap">
+        <div class="logo-preview" id="nm-logo-preview" onclick="document.getElementById('nm-logo-file').click()">
+          <span id="nm-logo-initials">?</span>
+          <img id="nm-logo-img" src="" style="display:none"/>
+        </div>
+        <input type="file" id="nm-logo-file" accept="image/*" style="display:none" onchange="nmHandleLogo(this)"/>
+        <div class="logo-upload-hint">Clicca per caricare il logo.<br/>Usato come immagine della card.<br/><span style="color:var(--text-35);">JPG, PNG, SVG — max 2MB</span></div>
+      </div>
     </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nome Progetto <span style="color:#93c5fd">*</span></label>
+        <input class="form-input" type="text" id="new-project-name"
+          placeholder="es. Taglia e Cuci Express"
+          oninput="nmUpdateInitials()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dominio</label>
+        <input class="form-input" type="text" id="nm-domain" placeholder="es. tagliaecuci.it"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">WP Admin URL</label>
+        <input class="form-input" type="text" id="nm-wp-url" placeholder="es. tagliaecuci.it/wp-admin"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">WP Username</label>
+        <input class="form-input" type="text" id="nm-wp-user" placeholder="es. admin"/>
+      </div>
+    </div>
+
     <div class="form-group">
-      <label class="form-label">Cliente</label>
-      <input class="form-input" id="new-project-client" type="text"
-        placeholder="Ragione sociale"
-        onkeydown="if(event.key==='Enter') confirmNewProject()">
+      <label class="form-label">Tipo Progetto</label>
+      <div class="tipo-grid" id="nm-tipo-grid">
+        <div class="tipo-btn active" data-tipo="vetrina" onclick="nmPickTipo(this)">🌐 Sito Vetrina</div>
+        <div class="tipo-btn" data-tipo="ecommerce" onclick="nmPickTipo(this)">🛒 E-commerce</div>
+        <div class="tipo-btn" data-tipo="blog" onclick="nmPickTipo(this)">📝 Blog / Magazine</div>
+        <div class="tipo-btn" data-tipo="webapp" onclick="nmPickTipo(this)">⚡ Web App</div>
+      </div>
     </div>
+
+    <!-- CARICA PROJECT BIBLE -->
     <div class="form-group">
-      <label class="form-label">Brief .docx (opzionale)</label>
-      <label class="upload-zone" id="new-brief-upload-zone" style="cursor:pointer">
-        <input type="file" id="new-brief-file-input" accept=".docx" style="display:none">
-        <div class="drop-zone-icon">📄</div>
-        <div class="drop-zone-text">Trascina il file .docx qui oppure clicca</div>
-        <p id="new-brief-file-name" style="color:#93c5fd;font-size:12px;margin-top:4px;"></p>
-      </label>
+      <label class="form-label">Carica Project Bible <span style="color:var(--text-35);text-transform:none;letter-spacing:0;font-weight:400">(.txt · .md · .docx)</span></label>
+      <div class="brief-upload" id="nm-brief-drop" onclick="document.getElementById('nm-brief-file').click()">
+        <div class="brief-upload-icon">📄</div>
+        <div class="brief-upload-text">Trascina qui il tuo Project Bible</div>
+        <div class="brief-upload-hint">.txt .md (consigliato) · .docx supportato</div>
+        <input type="file" id="nm-brief-file" accept=".txt,.md,.docx,.doc" style="display:none" onchange="nmHandleBrief(this)"/>
+      </div>
+      <div class="brief-loaded" id="nm-brief-loaded">
+        <span class="brief-loaded-icon">📄</span>
+        <span class="brief-loaded-name" id="nm-brief-loaded-name">—</span>
+        <span class="brief-loaded-remove" onclick="nmRemoveBrief()">✕ Rimuovi</span>
+      </div>
     </div>
+
+    <div class="ai-parsing" id="nm-ai-parsing">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="ai-parsing-text" id="nm-ai-parsing-text">L'AI sta leggendo il brief…</div>
+    </div>
+
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeNewProjectModal()">Annulla</button>
       <button class="btn btn-primary" onclick="confirmNewProject()">Crea Progetto</button>
@@ -370,7 +417,11 @@
 <script src="js/app.js"></script>
 
 <script>
-// ── Patch router: le view usano la classe pm-view/active ──────────
+/* ════════════════════════════════════════════════════════════
+   BRIDGE SCRIPT — integra hokuto con shell Agency Hub
+   ═══════════════════════════════════════════════════════════ */
+
+// ── 1. Patch router: usa pm-view ──────────────────────────────────
 // Override showView per usare pm-view invece di .view
 const _origShowView = showView;
 window.showView = function(viewName) {
@@ -423,6 +474,197 @@ function openImportModalFromFile(event) {
   if (typeof openImportModal === 'function') openImportModal(id);
   if (typeof handleImportFileSelect === 'function') handleImportFileSelect(event);
 }
+
+/* ── MODAL NUOVO PROGETTO — logica ricca webappfra ───────────────── */
+let _nmLogoData = null;
+let _nmBriefText = null;
+let _nmTipoSelected = 'vetrina';
+const TIPO_LABELS = { vetrina:'Sito Vetrina', ecommerce:'E-commerce', blog:'Blog / Magazine', webapp:'Web App' };
+
+function openNewProjectModal() {
+  document.getElementById('modal-new-project').classList.add('open');
+  document.getElementById('new-project-name').value = '';
+  if (document.getElementById('nm-domain')) document.getElementById('nm-domain').value = '';
+  if (document.getElementById('nm-wp-url')) document.getElementById('nm-wp-url').value = '';
+  if (document.getElementById('nm-wp-user')) document.getElementById('nm-wp-user').value = '';
+  document.getElementById('nm-logo-initials').textContent = '?';
+  document.getElementById('nm-logo-img').style.display = 'none';
+  document.getElementById('nm-logo-img').src = '';
+  document.getElementById('nm-brief-loaded').style.display = 'none';
+  document.getElementById('nm-ai-parsing').classList.remove('visible');
+  // Reset tipo
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  const defBtn = document.querySelector('.tipo-btn[data-tipo="vetrina"]');
+  if (defBtn) defBtn.classList.add('active');
+  _nmLogoData = null; _nmBriefText = null; _nmTipoSelected = 'vetrina';
+  setTimeout(() => document.getElementById('new-project-name').focus(), 100);
+}
+
+function closeNewProjectModal() {
+  document.getElementById('modal-new-project').classList.remove('open');
+}
+
+function nmUpdateInitials() {
+  const name = document.getElementById('new-project-name').value.trim();
+  const el = document.getElementById('nm-logo-initials');
+  if (el && !_nmLogoData) {
+    el.textContent = name ? name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() : '?';
+  }
+}
+
+function nmPickTipo(btn) {
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _nmTipoSelected = btn.dataset.tipo;
+}
+
+function nmHandleLogo(input) {
+  const file = input.files[0]; if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('Logo troppo grande (max 2MB)', 'warn'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 200;
+      const ratio = Math.min(MAX/img.width, MAX/img.height, 1);
+      canvas.width  = img.width  * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      _nmLogoData = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('nm-logo-img').src = _nmLogoData;
+      document.getElementById('nm-logo-img').style.display = 'block';
+      document.getElementById('nm-logo-initials').style.display = 'none';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function nmHandleBrief(input) {
+  const file = input.files[0]; if (!file) return;
+  const name = file.name;
+  try {
+    if (name.endsWith('.docx') || name.endsWith('.doc')) {
+      if (typeof mammoth !== 'undefined') {
+        const ab = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: ab });
+        _nmBriefText = result.value;
+      } else { showToast('.docx: libreria non caricata', 'warn'); return; }
+    } else {
+      _nmBriefText = await file.text();
+    }
+    document.getElementById('nm-brief-loaded-name').textContent = name;
+    document.getElementById('nm-brief-loaded').style.display = 'flex';
+    document.getElementById('nm-brief-drop').style.display = 'none';
+  } catch(e) { showToast('Errore lettura brief: ' + e.message, 'error'); }
+}
+
+function nmRemoveBrief() {
+  _nmBriefText = null;
+  document.getElementById('nm-brief-loaded').style.display = 'none';
+  document.getElementById('nm-brief-drop').style.display = '';
+  document.getElementById('nm-brief-file').value = '';
+}
+
+async function confirmNewProject() {
+  const nameInput = document.getElementById('new-project-name');
+  const name = nameInput.value.trim();
+  if (!name) { showToast('Inserisci il nome del progetto', 'warn'); nameInput.focus(); return; }
+
+  const domain  = document.getElementById('nm-domain')  ? document.getElementById('nm-domain').value.trim()  : '';
+  const wpUrl   = document.getElementById('nm-wp-url')   ? document.getElementById('nm-wp-url').value.trim()   : '';
+  const wpUser  = document.getElementById('nm-wp-user')  ? document.getElementById('nm-wp-user').value.trim()  : '';
+
+  // Crea progetto base con struttura hokuto
+  const project = createProject({ name, client: '' });
+
+  // Integra i campi extra webappfra nella struttura hokuto
+  const extras = {
+    logo:   _nmLogoData || null,
+    access: { url: wpUrl ? (wpUrl.startsWith('http') ? wpUrl : 'https://' + wpUrl) : '',
+              username: wpUser, password: '', notes: '' },
+    tipo:   _nmTipoSelected,
+    tipoLabel: TIPO_LABELS[_nmTipoSelected] || _nmTipoSelected,
+  };
+  // Precompila il campo dominio nel brief.scheda
+  if (domain) {
+    extras.brief = { scheda: { dominio: domain, tipoSito: TIPO_LABELS[_nmTipoSelected] || '' } };
+  }
+  updateProject(project.id, extras);
+
+  closeNewProjectModal();
+
+  // Se c'è il brief text, prova a parsarlo con Groq
+  if (_nmBriefText) {
+    const apiKey = typeof storageGetGroqKey === 'function' ? storageGetGroqKey() : '';
+    if (apiKey) {
+      document.getElementById('nm-ai-parsing').classList.add('visible');
+      try {
+        const brief = await nmParseBriefWithGroq(apiKey, _nmBriefText, name);
+        updateProject(project.id, { brief: { scheda: brief }, briefUpdatedAt: new Date().toISOString() });
+        showToast('Brief analizzato! Scheda compilata ✓', 'success');
+      } catch(e) {
+        showToast('Brief salvato, analisi AI fallita: ' + e.message, 'warn');
+      }
+      document.getElementById('nm-ai-parsing').classList.remove('visible');
+    } else {
+      updateProject(project.id, { brief: { rawText: _nmBriefText }, briefUpdatedAt: new Date().toISOString() });
+      showToast('Brief salvato. Configura Groq API in Impostazioni per analisi automatica.', 'info');
+    }
+  }
+
+  // Naviga alla scheda
+  navigateToProject(project.id, 'brief');
+  refreshSidebarBadge();
+}
+
+async function nmParseBriefWithGroq(apiKey, text, projectName) {
+  document.getElementById('nm-ai-parsing-text').textContent = 'Groq sta analizzando il Project Bible…';
+  const prompt = `Analizza questo Project Bible per un progetto web e restituisci SOLO un oggetto JSON valido con questa struttura:
+{"cliente":"","nomeCommerciale":"","settore":"","tipoSito":"","obiettivo":"","partitaIva":"","indirizzo":"","telefono":"","email":"","dominio":"","facebook":"","instagram":"","competitor":"","titolarePrivacy":"","proposta":"","tonoVoce":"","aggettiviSi":"","aggettiviNo":"","frasiGiuste":"","frasiEvitare":"","target":"","palette":"","font":"","moodVisivo":"","templateWordpress":"","noteOperative":""}
+Se un campo non è presente lascialo stringa vuota. Nessun testo fuori dal JSON.
+DOCUMENTO:\n${text.slice(0, 8000)}`;
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: prompt }], temperature: 0.1, max_tokens: 3000 })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const raw = data.choices[0].message.content;
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+
+/* ── Sticky tabs: calcola top dopo renderProjectHeader ──────────── */
+function updateTabsSticky() {
+  const header = document.getElementById('project-header');
+  const tabs   = document.getElementById('project-tabs');
+  if (!header || !tabs) return;
+  // Aspetta un frame per avere l'altezza reale
+  requestAnimationFrame(() => {
+    tabs.style.top = header.offsetHeight + 'px';
+  });
+}
+
+// Override showProjectView per aggiornare sticky dopo render
+const _origShowProjectView = typeof showProjectView !== 'undefined' ? showProjectView : null;
+document.addEventListener('DOMContentLoaded', () => {
+  // Patch post-init
+  const origRPH = window.renderProjectHeader;
+  if (origRPH) {
+    window.renderProjectHeader = function(project) {
+      origRPH(project);
+      updateTabsSticky();
+    };
+  }
+});
+
+/* ── ESC alias (hokuto usa escHtml, webappfra usa esc) ───────────── */
+if (typeof escHtml === 'undefined' && typeof esc !== 'undefined') window.escHtml = esc;
+if (typeof esc === 'undefined' && typeof escHtml !== 'undefined') window.esc = escHtml;
 </script>
 
 </body>
