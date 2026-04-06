@@ -1,0 +1,521 @@
+/* ============================================================
+   PROGETTI.CSS — Agency Hub v3.0
+   CSS scoped per il modulo Progetti (motore hokuto-hub-v3).
+   NON ridefinisce body, html, sidebar, #app, margin-left.
+   Mappa solo le variabili di hokuto sui token di Agency Hub
+   e stila i componenti del modulo.
+   ============================================================ */
+
+/* ── Variabili alias hokuto → Agency Hub ────────────────── */
+#progetti-module {
+  --bg:        var(--bg-deep);
+  --surface:   var(--bg-surface);
+  --surface2:  rgba(255,255,255,0.032);
+  --surface3:  rgba(255,255,255,0.06);
+  --border:    var(--glass-border);
+  --border2:   rgba(255,255,255,0.11);
+  --accent:         #3b82f6;
+  --accent-hover:   #60a5fa;
+  --accent-dim:     rgba(59,130,246,0.10);
+  --accent-blue:        #3b82f6;
+  --accent-blue-light:  #93c5fd;
+  --accent-blue-dim:    rgba(59,130,246,0.10);
+  --accent-blue-border: rgba(59,130,246,0.25);
+  --text:  #f1f5f9;
+  --text2: rgba(241,245,249,0.58);
+  --text3: rgba(241,245,249,0.32);
+  --muted: rgba(241,245,249,0.20);
+  --danger:  #ef4444;
+  --warn:    #f59e0b;
+  --success: #10b981;
+  --info:    #38bdf8;
+  --radius:    var(--r-xl);
+  --radius-sm: var(--r-lg);
+  --radius-xs: var(--r-md);
+}
+
+/* ── Contenitore modulo ─────────────────────────────────── */
+#progetti-module {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text-100);
+}
+
+/* ── View switching ─────────────────────────────────────── */
+#progetti-module .pm-view          { display: none; }
+#progetti-module .pm-view.active   { display: block; }
+
+/* ── Dashboard header ───────────────────────────────────── */
+#progetti-module .pm-dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ── Projects grid ──────────────────────────────────────── */
+#progetti-module .projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+/* ── Project card ───────────────────────────────────────── */
+#progetti-module .project-card {
+  background: var(--glass-fill);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+#progetti-module .project-card:hover {
+  border-color: var(--glass-border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(59,130,246,0.1);
+}
+#progetti-module .project-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+#progetti-module .project-card:hover::before { opacity: 1; }
+
+#progetti-module .project-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  gap: 10px;
+}
+#progetti-module .project-card-avatar {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: rgba(59,130,246,0.10);
+  border: 1px solid rgba(59,130,246,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #93c5fd;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+#progetti-module .project-card-menu {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-35);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  opacity: 0;
+  flex-shrink: 0;
+}
+#progetti-module .project-card:hover .project-card-menu { opacity: 1; }
+#progetti-module .project-card-menu:hover { background: var(--glass-fill-md); color: var(--accent-red-soft); }
+
+#progetti-module .project-card-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-100);
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+#progetti-module .project-card-meta {
+  font-size: 12px;
+  color: var(--text-35);
+}
+#progetti-module .project-card-body {
+  padding: 0 16px 16px;
+}
+#progetti-module .project-card-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Progress bar ───────────────────────────────────────── */
+#progetti-module .progress-bar-label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; color: var(--text-35); margin-bottom: 6px;
+}
+#progetti-module .progress-bar-label span:first-child {
+  font-weight: 700; font-size: 10px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+#progetti-module .progress-bar-label span:last-child {
+  color: var(--accent-blue-soft); font-weight: 600;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+}
+#progetti-module .progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+#progetti-module .progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* ── Add project card ───────────────────────────────────── */
+#progetti-module .add-project-card {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.11);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 140px;
+  color: var(--text-35);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+#progetti-module .add-project-card:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue-soft);
+  background: rgba(59,130,246,0.06);
+}
+#progetti-module .add-project-card svg { width: 24px; height: 24px; }
+
+/* ── Project header (scheda) ────────────────────────────── */
+#project-header {
+  background: rgba(8,12,18,0.97);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  margin: -38px -34px 0;    /* annulla il padding di .main-content */
+  padding: 0 34px;
+}
+@media (max-width: 900px) {
+  #project-header { margin: -32px -18px 0; padding: 0 18px; }
+}
+@media (max-width: 768px) {
+  #project-header { margin: -70px -14px 0; padding: 0 14px; }
+}
+
+/* ── Tab nav ────────────────────────────────────────────── */
+#project-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border-bottom: 1px solid var(--glass-border);
+  background: transparent;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#project-tabs::-webkit-scrollbar { display: none; }
+
+#progetti-module .tab-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-60);
+  font-size: 13px; font-weight: 500;
+  font-family: 'Inter', system-ui, sans-serif;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  border-radius: 0;
+}
+#progetti-module .tab-btn:hover { color: var(--text-100); }
+#progetti-module .tab-btn.active {
+  color: var(--accent-blue-soft);
+  border-bottom-color: var(--accent-blue);
+}
+#progetti-module .tab-btn svg { width: 13px; height: 13px; }
+
+#progetti-module .tab-progress-badge {
+  font-size: 10px; font-weight: 700;
+  background: rgba(59,130,246,0.13); color: #93c5fd;
+  border: 1px solid rgba(59,130,246,0.20);
+  padding: 1px 6px; border-radius: 20px;
+}
+
+/* ── Tab content ────────────────────────────────────────── */
+#project-content { }
+#progetti-module .tab-pane          { display: none; }
+#progetti-module .tab-pane.active   { display: block; }
+
+/* ── Buttons (scoped) ───────────────────────────────────── */
+#progetti-module .btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px;
+  border-radius: var(--r-lg);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600; font-size: 13px;
+  cursor: pointer; border: none;
+  transition: all var(--transition);
+  text-decoration: none; white-space: nowrap;
+}
+#progetti-module .btn svg { width: 14px; height: 14px; }
+#progetti-module .btn-primary {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 3px 14px rgba(59,130,246,0.26);
+}
+#progetti-module .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(59,130,246,0.36);
+}
+#progetti-module .btn-ghost {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  color: var(--text-60);
+}
+#progetti-module .btn-ghost:hover {
+  background: var(--glass-fill-md);
+  color: var(--text-100);
+  border-color: var(--glass-border-hover);
+}
+#progetti-module .btn-danger {
+  background: rgba(239,68,68,0.09);
+  border: 1px solid rgba(239,68,68,0.18);
+  color: #fca5a5;
+}
+#progetti-module .btn-danger:hover { background: rgba(239,68,68,0.17); }
+#progetti-module .btn-sm   { padding: 6px 12px; font-size: 12px; }
+#progetti-module .btn-icon { padding: 8px; gap: 0; }
+#progetti-module .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Forms (scoped) ─────────────────────────────────────── */
+#progetti-module .form-group { margin-bottom: 15px; }
+#progetti-module .form-label {
+  display: block; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.7px; text-transform: uppercase;
+  color: var(--text-60); margin-bottom: 6px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+#progetti-module .form-input,
+#progetti-module .form-select,
+#progetti-module .form-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.032);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  color: var(--text-100); font-size: 13.5px;
+  padding: 9px 13px; outline: none;
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: border-color var(--transition), background var(--transition);
+}
+#progetti-module .form-input::placeholder,
+#progetti-module .form-textarea::placeholder { color: var(--text-35); }
+#progetti-module .form-input:focus,
+#progetti-module .form-select:focus,
+#progetti-module .form-textarea:focus {
+  border-color: rgba(59,130,246,0.42);
+  background: rgba(59,130,246,0.04);
+}
+#progetti-module .form-input.mono { font-family: 'JetBrains Mono', monospace; }
+#progetti-module .form-textarea { resize: vertical; line-height: 1.6; min-height: 78px; }
+#progetti-module .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── Upload/drop zone ───────────────────────────────────── */
+#progetti-module .upload-zone,
+#progetti-module .drop-zone {
+  border: 2px dashed rgba(59,130,246,0.20);
+  border-radius: var(--r-lg);
+  padding: 26px;
+  text-align: center; cursor: pointer;
+  transition: all var(--transition);
+  background: rgba(59,130,246,0.02);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+#progetti-module .upload-zone:hover,
+#progetti-module .drop-zone:hover,
+#progetti-module .drop-zone.over {
+  border-color: rgba(59,130,246,0.46);
+  background: rgba(59,130,246,0.055);
+}
+
+/* ── Modali ─────────────────────────────────────────────── */
+/* Le overlay dei modali devono stare fuori dallo scope #progetti-module
+   perché coprono tutta la viewport — regole globali ok */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.76); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: rgba(10,15,23,0.99);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-xl);
+  padding: 26px;
+  width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  animation: modalIn 0.18s ease;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.modal-lg { max-width: 640px; }
+@keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(8px); } to { opacity:1; transform:none; } }
+.modal-header  { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.modal-title   { font-size:16.5px; font-weight:700; color:var(--text-100); }
+.modal-header p { font-size:13px; color:var(--text-60); margin-top:4px; }
+.modal-close {
+  background:none; border:1px solid var(--glass-border);
+  color:var(--text-60); width:28px; height:28px;
+  border-radius:var(--r-md); display:flex; align-items:center; justify-content:center;
+  font-size:13px; cursor:pointer; transition:all var(--transition);
+}
+.modal-close:hover { background:var(--glass-fill-md); color:var(--text-100); }
+.modal-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; padding-top:16px; border-top:1px solid var(--glass-border); }
+
+/* Bottoni dentro modali (globali) */
+.modal .btn {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:9px 16px; border-radius:var(--r-lg);
+  font-family:'Inter',system-ui,sans-serif;
+  font-weight:600; font-size:13px;
+  cursor:pointer; border:none; transition:all var(--transition);
+  white-space:nowrap;
+}
+.modal .btn svg { width:14px; height:14px; }
+.modal .btn-primary {
+  background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);
+  color:#fff; box-shadow:0 3px 14px rgba(59,130,246,0.26);
+}
+.modal .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 22px rgba(59,130,246,0.36); }
+.modal .btn-ghost {
+  background:var(--glass-fill); border:1px solid var(--glass-border); color:var(--text-60);
+}
+.modal .btn-ghost:hover { background:var(--glass-fill-md); color:var(--text-100); border-color:var(--glass-border-hover); }
+.modal .btn-danger { background:rgba(239,68,68,0.09); border:1px solid rgba(239,68,68,0.18); color:#fca5a5; }
+.modal .btn-danger:hover { background:rgba(239,68,68,0.17); }
+.modal .form-group { margin-bottom:15px; }
+.modal .form-label {
+  display:block; font-size:11px; font-weight:600;
+  letter-spacing:0.7px; text-transform:uppercase;
+  color:var(--text-60); margin-bottom:6px;
+}
+.modal .form-input, .modal .form-select, .modal .form-textarea {
+  width:100%; background:rgba(255,255,255,0.032);
+  border:1px solid var(--glass-border);
+  border-radius:var(--r-md); color:var(--text-100);
+  font-size:13.5px; padding:9px 13px; outline:none;
+  font-family:'Inter',system-ui,sans-serif;
+  transition:border-color var(--transition),background var(--transition);
+}
+.modal .form-input:focus, .modal .form-textarea:focus {
+  border-color:rgba(59,130,246,0.42); background:rgba(59,130,246,0.04);
+}
+.modal .form-input::placeholder, .modal .form-textarea::placeholder { color:var(--text-35); }
+.modal .upload-zone, .modal .drop-zone {
+  border:2px dashed rgba(59,130,246,0.20); border-radius:var(--r-lg);
+  padding:26px; text-align:center; cursor:pointer;
+  background:rgba(59,130,246,0.02);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  transition:all var(--transition);
+}
+.modal .upload-zone:hover, .modal .drop-zone:hover {
+  border-color:rgba(59,130,246,0.46); background:rgba(59,130,246,0.055);
+}
+.modal .drop-zone-icon { font-size:24px; opacity:0.6; }
+.modal .drop-zone-text { font-size:13px; color:var(--text-60); }
+.modal .divider { height:1px; background:var(--glass-border); margin:16px 0; }
+
+/* checkbox custom */
+.checkbox-wrap {
+  display:flex; align-items:center; gap:10px; cursor:pointer;
+  padding:8px 12px; border-radius:var(--r-md);
+  border:1px solid var(--glass-border);
+  background:var(--glass-fill);
+  transition:border-color var(--transition);
+}
+.checkbox-wrap:hover { border-color:var(--glass-border-hover); }
+.checkbox-wrap input[type=checkbox] { display:none; }
+.checkbox-custom {
+  width:16px; height:16px; border-radius:4px;
+  border:1.5px solid var(--glass-border);
+  background:rgba(255,255,255,0.04);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:all var(--transition);
+}
+.checkbox-wrap input:checked + .checkbox-custom {
+  background:var(--accent-blue);
+  border-color:var(--accent-blue);
+}
+.checkbox-wrap input:checked + .checkbox-custom::after {
+  content:''; width:9px; height:5px;
+  border-left:2px solid #fff; border-bottom:2px solid #fff;
+  transform:rotate(-45deg) translateY(-1px);
+  display:block;
+}
+.checkbox-label { font-size:13px; color:var(--text-60); }
+
+/* ── Toast ──────────────────────────────────────────────── */
+#toast-container {
+  position:fixed; bottom:80px; right:20px;
+  z-index:9999; display:flex; flex-direction:column; gap:8px;
+}
+.toast {
+  display:flex; align-items:center; gap:8px;
+  padding:11px 16px; border-radius:10px;
+  font-size:13px; font-weight:500; color:#f1f5f9;
+  backdrop-filter:blur(16px);
+  box-shadow:0 6px 28px rgba(0,0,0,0.38);
+  animation:toastIn .22s ease both; max-width:300px;
+  font-family:'Inter',system-ui,sans-serif;
+}
+.toast.success { background:rgba(16,185,129,0.13); border:1px solid rgba(16,185,129,0.28); }
+.toast.error   { background:rgba(239,68,68,0.13);  border:1px solid rgba(239,68,68,0.28); }
+.toast.warn    { background:rgba(245,158,11,0.13); border:1px solid rgba(245,158,11,0.28); }
+.toast.info    { background:rgba(59,130,246,0.13); border:1px solid rgba(59,130,246,0.28); }
+.toast-icon    { font-size:14px; }
+@keyframes toastIn { from{opacity:0;transform:translateX(12px)} to{opacity:1;transform:none} }
+
+/* ── Empty state ────────────────────────────────────────── */
+#progetti-module .empty-state {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:12px; padding:60px 40px;
+  text-align:center; color:var(--text-35);
+}
+#progetti-module .empty-state svg { width:48px; height:48px; opacity:0.3; }
+#progetti-module .empty-state h3  { font-weight:700; font-size:16px; color:var(--text-60); }
+#progetti-module .empty-state p   { font-size:13px; max-width:300px; }
+
+/* ── Spinner ────────────────────────────────────────────── */
+.spinner {
+  width:16px; height:16px;
+  border:2px solid rgba(255,255,255,0.10);
+  border-top-color:var(--accent-blue);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite; display:inline-block;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Divider, badge ─────────────────────────────────────── */
+.divider { height:1px; background:var(--glass-border); margin:16px 0; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #progetti-module .projects-grid { grid-template-columns: 1fr; }
+  #progetti-module .form-row      { grid-template-columns: 1fr; }
+}

@@ -311,10 +311,26 @@ document.addEventListener('keydown', e => {
 });
 
 // ─── INIT ───
-// DOMContentLoaded gestito dal bridge in progetti/index.html
-// app.js non fa init autonomo quando caricato in-app
 document.addEventListener('DOMContentLoaded', () => {
-  // Settings link (ancora necessario)
+  // Agency Hub: setup bypassato, Groq key gestita in Impostazioni
+  const key = storageGetGroqKey();
+  updateApiStatus(!!key);
+  initRouter();
+
+  // New project brief file
+  const briefFileInput = document.getElementById('new-brief-file-input');
+  if (briefFileInput) {
+    briefFileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        window._newBriefFile = file;
+        const label = document.getElementById('new-brief-file-name');
+        if (label) label.textContent = file.name;
+      }
+    });
+  }
+
+  // Settings link
   const settingsLinks = document.querySelectorAll('[href="#settings"]');
   settingsLinks.forEach(link => {
     link.addEventListener('click', () => renderSettings());

@@ -25,7 +25,7 @@ function handleRoute() {
 }
 
 function showView(viewName) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('#progetti-module .pm-view').forEach(v => v.classList.remove('active'));
   const view = document.getElementById('view-' + viewName);
   if (view) view.classList.add('active');
 }
