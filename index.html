@@ -267,48 +267,57 @@
 <script>
 // ── INIT ─────────────────────────────────────────────────
 (function init() {
-  var progetti   = (function(){ try { var v=localStorage.getItem('evolve_pm_projects'); return v?JSON.parse(v):[]; } catch(e){ return []; } })();
-  var interventi = store.get('hub_interventi', []);
-  var schede     = store.get('hub_stats', {}).schede || 0;
+  // Legge progetti da hokuto (evolve_pm_projects) — unica source of truth
+  function getHokutoProjects() {
+    try { var v = localStorage.getItem('evolve_pm_projects'); return v ? JSON.parse(v) : []; }
+    catch(e) { return []; }
+  }
 
-  var progettiAttivi   = progetti.filter(function(p) { return p.status !== 'archiviato' && p.status !== 'consegnato'; });
+  var progetti     = getHokutoProjects();
+  var interventi   = store.get('hub_interventi', []);
+  var schede       = store.get('hub_stats', {}).schede || 0;
+
+  // Attivi = tutto tranne archiviato/consegnato (compatibile con stati hokuto)
+  var attivi           = progetti.filter(function(p) { return p.status !== 'archiviato' && p.status !== 'consegnato'; });
   var interventiAperti = interventi.filter(function(i) { return i.status !== 'done'; });
 
-  var hokutoAttivi = progettiHokuto.filter(function(p){ return p.status === 'attivo'; });
-  document.getElementById('stat-progetti').textContent = hokutoAttivi.length;
+  document.getElementById('stat-progetti').textContent   = attivi.length;
   document.getElementById('stat-interventi').textContent = interventiAperti.length;
   document.getElementById('stat-schede').textContent     = schede;
+  if (document.getElementById('stat-archivio')) {
+    document.getElementById('stat-archivio').textContent = progetti.length;
+  }
 
-  document.getElementById('sb-badge-progetti').textContent = hokutoAttivi.length;
+  document.getElementById('sb-badge-progetti').textContent   = attivi.length;
   document.getElementById('sb-badge-interventi').textContent = interventiAperti.length;
-  document.getElementById('cnt-progetti').textContent = hokutoAttivi.length;
+  document.getElementById('cnt-progetti').textContent        = attivi.length;
   document.getElementById('cnt-interventi').textContent      = interventiAperti.length;
 
   updateSidebarBadges();
 
-  // Render contenuto locale immediato
-  renderProgettiAttivi(hokutoAttivi.length ? hokutoAttivi : progettiAttivi);
+  renderProgettiAttivi(attivi);
   renderInterventiAperti(interventiAperti);
   renderActivity();
 
-  // GitHub Sync — pull all data on startup, poi aggiorna la UI
+  // GitHub Sync
   if (typeof GitHubSync !== 'undefined' && GitHubSync.isConfigured()) {
     GitHubSync.pullAll().then(function(ok) {
       if (ok) {
-        var p2 = (function(){ try { var v=localStorage.getItem('evolve_pm_projects'); return v?JSON.parse(v):[]; } catch(e){ return []; } })();
-        var i2 = store.get('hub_interventi', []);
-        var progettiAttivi2   = p2.filter(function(p) { return p.status !== 'archiviato' && p.status !== 'consegnato'; });
-        var interventiAperti2 = i2.filter(function(i) { return i.status !== 'done'; });
-        var hokutoAll2 = JSON.parse(localStorage.getItem('evolve_pm_projects')||'[]');
-        var hokutoAttivi2 = hokutoAll2.filter(function(p){ return p.status==='attivo'; });
-        document.getElementById('stat-progetti').textContent = hokutoAttivi2.length;
-        document.getElementById('stat-interventi').textContent      = interventiAperti2.length;
-        document.getElementById('sb-badge-progetti').textContent = hokutoAttivi2.length;
-        document.getElementById('sb-badge-interventi').textContent  = interventiAperti2.length;
-        document.getElementById('cnt-progetti').textContent = hokutoAttivi2.length;
-        document.getElementById('cnt-interventi').textContent       = interventiAperti2.length;
-        renderProgettiAttivi(hokutoAttivi2.length ? hokutoAttivi2 : progettiAttivi2);
-        renderInterventiAperti(interventiAperti2);
+        var p2           = getHokutoProjects();
+        var i2           = store.get('hub_interventi', []);
+        var attivi2      = p2.filter(function(p) { return p.status !== 'archiviato' && p.status !== 'consegnato'; });
+        var interventi2  = i2.filter(function(i) { return i.status !== 'done'; });
+
+        document.getElementById('stat-progetti').textContent   = attivi2.length;
+        document.getElementById('stat-interventi').textContent = interventi2.length;
+        if (document.getElementById('stat-archivio')) document.getElementById('stat-archivio').textContent = p2.length;
+        document.getElementById('sb-badge-progetti').textContent   = attivi2.length;
+        document.getElementById('sb-badge-interventi').textContent = interventi2.length;
+        document.getElementById('cnt-progetti').textContent        = attivi2.length;
+        document.getElementById('cnt-interventi').textContent      = interventi2.length;
+
+        renderProgettiAttivi(attivi2);
+        renderInterventiAperti(interventi2);
         renderActivity();
       }
     });
