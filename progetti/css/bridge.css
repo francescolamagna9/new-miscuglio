@@ -1,0 +1,313 @@
+/* ============================================================
+   BRIDGE.CSS — Adatta le variabili di hokuto-hub al sistema
+   di design di Agency Hub (webappfra). 
+   Importato PRIMA dei CSS di hokuto, ridefinisce i token
+   in modo che i componenti hokuto usino la palette corretta.
+   ============================================================ */
+
+/* ── Override variabili hokuto con i valori di Agency Hub ── */
+:root {
+  /* Sfondi */
+  --bg:       var(--bg-deep, #080c12);
+  --surface:  var(--bg-surface, #0f1520);
+  --surface2: rgba(255,255,255,0.032);
+  --surface3: rgba(255,255,255,0.06);
+
+  /* Bordi */
+  --border:  var(--glass-border, rgba(255,255,255,0.075));
+  --border2: rgba(255,255,255,0.11);
+
+  /* Accent — usiamo blue di Agency Hub, NON il lime di hokuto */
+  --accent:       #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-dim:   rgba(59,130,246,0.10);
+
+  /* Blue già allineati */
+  --accent-blue:        #3b82f6;
+  --accent-blue-light:  #93c5fd;
+  --accent-blue-dim:    rgba(59,130,246,0.10);
+  --accent-blue-border: rgba(59,130,246,0.25);
+
+  /* Testi */
+  --text:  #f1f5f9;
+  --text2: rgba(241,245,249,0.58);
+  --text3: rgba(241,245,249,0.32);
+  --muted: rgba(241,245,249,0.20);
+
+  /* Semantici */
+  --danger:  #ef4444;
+  --warn:    #f59e0b;
+  --success: #10b981;
+  --info:    #38bdf8;
+
+  /* Layout */
+  --sidebar-w: var(--sidebar-w, 252px);
+  --header-h:  58px;
+  --radius:    18px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+}
+
+/* ── Font: allinea a Inter (Agency Hub) invece di DM Sans/Syne ── */
+body, .main-content, #main-content,
+.view, .modal, .form-input, .form-textarea, .form-select,
+.btn, .tab-btn, .ph-name, .ph-client {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Titoli che hokuto usa Syne: li rendiamo Inter bold */
+.ph-name, .dashboard-header h1, .modal h2,
+.project-title, .setup-card h2 {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+/* ── Sidebar hokuto: nascosta — usiamo quella di Agency Hub ── */
+#sidebar { display: none !important; }
+
+/* ── App shell: niente flex orizzontale, layout webappfra ── */
+#app {
+  display: block !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* ── Main content: segue il margine della sidebar Agency Hub ── */
+#main-content {
+  margin-left: 0 !important;
+  min-height: 100vh;
+  padding: 38px 34px 80px !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── View attiva ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── Dashboard view ── */
+#view-dashboard {
+  padding: 0 !important;
+}
+
+/* ── Dashboard header allineato ── */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.dashboard-header h1 {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+  color: var(--text);
+}
+.dashboard-header p {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+/* ── Card progetti: usa glass card di Agency Hub ── */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.project-card {
+  background: var(--glass-fill, rgba(255,255,255,0.028)) !important;
+  backdrop-filter: var(--glass-blur, blur(20px) saturate(150%)) !important;
+  -webkit-backdrop-filter: var(--glass-blur, blur(20px) saturate(150%)) !important;
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.075)) !important;
+  border-radius: var(--r-xl, 18px) !important;
+  box-shadow: var(--shadow-card, 0 2px 20px rgba(0,0,0,0.42)) !important;
+  transition: border-color 0.2s, transform 0.2s !important;
+}
+.project-card:hover {
+  border-color: var(--glass-border-hover, rgba(59,130,246,0.28)) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ── Bottoni: usa sistema Agency Hub ── */
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 3px 14px rgba(59,130,246,0.26) !important;
+  border: none !important;
+  border-radius: var(--r-lg, 12px) !important;
+}
+.btn-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 22px rgba(59,130,246,0.36) !important;
+}
+.btn-ghost {
+  background: var(--glass-fill, rgba(255,255,255,0.028)) !important;
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.075)) !important;
+  color: var(--text2) !important;
+  border-radius: var(--r-lg, 12px) !important;
+}
+.btn-ghost:hover {
+  background: var(--glass-fill-md, rgba(255,255,255,0.052)) !important;
+  color: var(--text) !important;
+  border-color: var(--glass-border-hover, rgba(59,130,246,0.28)) !important;
+}
+.btn-danger {
+  background: rgba(239,68,68,0.09) !important;
+  border: 1px solid rgba(239,68,68,0.18) !important;
+  color: #fca5a5 !important;
+  border-radius: var(--r-lg, 12px) !important;
+}
+.btn-danger:hover { background: rgba(239,68,68,0.17) !important; }
+
+/* ── Inputs ── */
+.form-input, .form-select, .form-textarea {
+  background: rgba(255,255,255,0.032) !important;
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.075)) !important;
+  border-radius: var(--r-md, 8px) !important;
+  color: var(--text) !important;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: rgba(59,130,246,0.42) !important;
+  background: rgba(59,130,246,0.04) !important;
+  outline: none !important;
+}
+
+/* ── Modali ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.76);
+  backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: rgba(10,15,23,0.99) !important;
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.075)) !important;
+  border-radius: var(--r-xl, 18px) !important;
+  animation: modalIn 0.18s ease;
+}
+@keyframes modalIn { from { opacity:0; transform: scale(0.96) translateY(8px); } to { opacity:1; transform:none; } }
+.modal-close {
+  background: none !important;
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.075)) !important;
+  color: var(--text2) !important;
+  border-radius: var(--r-md, 8px) !important;
+}
+.modal-close:hover {
+  background: var(--glass-fill-md, rgba(255,255,255,0.052)) !important;
+  color: var(--text) !important;
+}
+
+/* ── Project header sticky (scheda progetto) ── */
+#project-header {
+  background: rgba(8,12,18,0.95) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.075)) !important;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ── Tab nav ── */
+#project-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.075));
+  background: rgba(8,12,18,0.90);
+  backdrop-filter: blur(20px);
+  position: sticky;
+  top: var(--project-header-h, 90px);
+  z-index: 99;
+  overflow-x: auto;
+}
+.tab-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 14px;
+  background: none !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  color: var(--text2) !important;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  border-radius: 0 !important;
+}
+.tab-btn:hover { color: var(--text) !important; }
+.tab-btn.active {
+  color: var(--accent-blue-light, #93c5fd) !important;
+  border-bottom-color: #3b82f6 !important;
+}
+.tab-btn svg { width: 13px; height: 13px; }
+.tab-progress-badge {
+  font-size: 10px; font-weight: 700;
+  background: rgba(59,130,246,0.13); color: #93c5fd;
+  border: 1px solid rgba(59,130,246,0.20);
+  padding: 1px 6px; border-radius: 20px;
+}
+
+/* ── Tab content ── */
+#project-content { flex: 1; overflow-y: auto; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Upload zone ── */
+.upload-zone, .drop-zone {
+  border: 2px dashed rgba(59,130,246,0.20) !important;
+  border-radius: var(--r-lg, 12px) !important;
+  background: rgba(59,130,246,0.02) !important;
+}
+.upload-zone:hover, .drop-zone:hover, .drop-zone.over {
+  border-color: rgba(59,130,246,0.46) !important;
+  background: rgba(59,130,246,0.055) !important;
+}
+
+/* ── Toast ── */
+#toast-container {
+  position: fixed; bottom: 80px; right: 20px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 16px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  color: #f1f5f9;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.38);
+  animation: toastIn .22s ease both;
+  max-width: 300px;
+}
+.toast.success { background: rgba(16,185,129,0.13); border: 1px solid rgba(16,185,129,0.28); }
+.toast.error   { background: rgba(239,68,68,0.13);  border: 1px solid rgba(239,68,68,0.28); }
+.toast.warn    { background: rgba(245,158,11,0.13); border: 1px solid rgba(245,158,11,0.28); }
+.toast.info    { background: rgba(59,130,246,0.13); border: 1px solid rgba(59,130,246,0.28); }
+.toast-icon { font-size: 14px; }
+@keyframes toastIn { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:none; } }
+
+/* ── API status dot ── */
+.api-status .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); }
+.api-status.ok .dot { background: #10b981; box-shadow: 0 0 6px #10b981; }
+.api-status.err .dot { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  #main-content {
+    padding: 70px 14px 80px !important;
+  }
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  #project-tabs {
+    top: var(--topbar-h, 58px);
+  }
+}

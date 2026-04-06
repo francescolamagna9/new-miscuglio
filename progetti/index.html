@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progetti — Agency Hub</title>
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <!-- CSS hokuto: bridge prima (override variabili), poi i fogli specifici -->
+  <link rel="stylesheet" href="css/bridge.css">
+  <link rel="stylesheet" href="css/project.css">
+  <link rel="stylesheet" href="css/brief.css">
+  <link rel="stylesheet" href="css/checklist.css">
+  <!-- Mammoth per parsing .docx -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+</head>
+<body>
+
+<!-- bg mesh webappfra -->
+<div class="bg-mesh"></div>
+
+<!-- ═══ SIDEBAR (Agency Hub) ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">⚡</div>
+    <div>
+      <div class="sidebar-logo-name">Agency Hub</div>
+      <div class="sidebar-logo-sub">Centro Operativo</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section-label">Principale</div>
+  <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></a>
+
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-section-label">Lavori</div>
+  <a class="nav-item active" href="../progetti/index.html"><span class="nav-icon">📁</span><span class="nav-label">Progetti</span><span class="nav-badge" id="sb-badge-progetti">0</span></a>
+  <a class="nav-item" href="../interventi/index.html"><span class="nav-icon">🔧</span><span class="nav-label">Interventi</span><span class="nav-badge" id="sb-badge-interventi">0</span></a>
+
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-section-label">Strumenti</div>
+  <a class="nav-item" href="../schede-prodotto/index.html"><span class="nav-icon">✦</span><span class="nav-label">Schede Prodotto AI</span></a>
+  <a class="nav-item" href="../archivio/index.html"><span class="nav-icon">📂</span><span class="nav-label">Archivio Progetti</span></a>
+
+  <div class="sidebar-sep"></div>
+  <a class="nav-item" href="../impostazioni/index.html"><span class="nav-icon">⚙️</span><span class="nav-label">Impostazioni</span></a>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-ver">Agency Hub v3.0</div>
+    <div class="sidebar-footer-api" onclick="location.href='../impostazioni/index.html'">
+      <span class="sidebar-footer-api-dot off" id="sb-api-dot"></span>
+      <span id="sb-api-label">API Key non configurata</span>
+    </div>
+  </div>
+</aside>
+
+<!-- overlay mobile -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="sidebarClose()"></div>
+
+<!-- topbar mobile -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="topbar-logo-icon">⚡</div>Agency Hub
+  </div>
+  <button class="hamburger" onclick="sidebarToggle()" aria-label="Apri menu">☰</button>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div class="main-content">
+  <div id="main-content">
+
+    <!-- ── DASHBOARD VIEW (lista progetti) ── -->
+    <div id="view-dashboard" class="view active">
+      <div class="dashboard-header">
+        <div>
+          <p class="page-eyebrow">Lavori</p>
+          <h1 class="page-title">Progetti</h1>
+          <p class="page-sub">Gestisci i tuoi progetti web in un unico posto.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openNewProjectModal()">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 1v12M1 7h12"/></svg>
+          Nuovo Progetto
+        </button>
+      </div>
+      <div id="projects-grid" class="projects-grid"></div>
+    </div>
+
+    <!-- ── PROJECT VIEW (scheda singola) ── -->
+    <div id="view-project" class="view">
+      <div id="project-header"></div>
+
+      <div id="project-tabs">
+        <button class="tab-btn active" data-tab="brief" onclick="switchTab('brief')">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h10v10H2z"/><path d="M5 5h4M5 8h4"/></svg>
+          Brief
+        </button>
+        <button class="tab-btn" data-tab="checklist" onclick="switchTab('checklist')">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l2 2 4-4"/><rect x="1" y="1" width="12" height="12" rx="2"/></svg>
+          Checklist
+          <span class="tab-progress-badge">0%</span>
+        </button>
+        <button class="tab-btn" data-tab="access" onclick="switchTab('access')">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6V4a3 3 0 00-6 0v2"/><rect x="1" y="6" width="12" height="8" rx="1.5"/><circle cx="7" cy="10" r="1"/></svg>
+          Accessi WP
+        </button>
+        <button class="tab-btn" data-tab="assets" onclick="switchTab('assets')">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h10M2 7h7M2 10h5"/></svg>
+          Assets & Link
+        </button>
+        <button class="tab-btn" data-tab="revisions" onclick="switchTab('revisions')">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 7a6 6 0 1012 0A6 6 0 001 7zm6-3v3l2 2"/></svg>
+          Revisioni
+        </button>
+      </div>
+
+      <div id="project-content">
+        <div id="tab-brief"     class="tab-pane active"></div>
+        <div id="tab-checklist" class="tab-pane"></div>
+        <div id="tab-access"    class="tab-pane"></div>
+        <div id="tab-assets"    class="tab-pane"></div>
+        <div id="tab-revisions" class="tab-pane"></div>
+      </div>
+    </div>
+
+  </div><!-- /main-content hokuto -->
+</div><!-- /main-content webappfra -->
+
+<!-- bottom nav mobile -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item" onclick="location.href='../index.html'"><span class="bicon">🏠</span>Home</button>
+    <button class="bnav-item active" onclick="location.href='../progetti/index.html'"><span class="bicon">📁</span>Progetti</button>
+    <button class="bnav-item" onclick="location.href='../interventi/index.html'"><span class="bicon">🔧</span>Interventi</button>
+    <button class="bnav-item" onclick="location.href='../schede-prodotto/index.html'"><span class="bicon">✦</span>Schede</button>
+    <button class="bnav-item" onclick="location.href='../impostazioni/index.html'"><span class="bicon">⚙️</span>Settings</button>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast-container"></div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Nuovo Progetto -->
+<div class="modal-overlay" id="modal-new-project">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">Nuovo Progetto</h2>
+        <p style="font-size:13px;color:var(--text-60);margin-top:4px;">Crea un nuovo progetto e opzionalmente carica il brief.</p>
+      </div>
+      <button class="modal-close" onclick="closeNewProjectModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nome Progetto <span style="color:var(--accent-blue-soft)">*</span></label>
+      <input class="form-input" id="new-project-name" type="text" placeholder="es. Taglia e Cuci Express"
+        onkeydown="if(event.key==='Enter') document.getElementById('new-project-client').focus()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cliente</label>
+      <input class="form-input" id="new-project-client" type="text" placeholder="Ragione sociale"
+        onkeydown="if(event.key==='Enter') confirmNewProject()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Brief .docx (opzionale)</label>
+      <label class="drop-zone" id="new-brief-upload-zone" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;">
+        <input type="file" id="new-brief-file-input" accept=".docx" style="display:none;">
+        <div class="drop-zone-icon">📄</div>
+        <div class="drop-zone-text">Trascina il file .docx qui oppure clicca</div>
+        <p id="new-brief-file-name" style="color:var(--accent-blue-soft);margin-top:4px;font-size:12px;"></p>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeNewProjectModal()">Annulla</button>
+      <button class="btn btn-primary" onclick="confirmNewProject()">Crea Progetto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Elimina Progetto -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">Elimina Progetto</h2>
+        <p style="font-size:13px;color:var(--text-60);margin-top:4px;">Questa azione non può essere annullata.</p>
+      </div>
+      <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+    </div>
+    <p style="font-size:14px;color:var(--text-60);margin-bottom:8px;">Stai per eliminare il progetto:</p>
+    <p style="font-weight:700;font-size:16px;color:var(--accent-red-soft);" id="delete-project-name"></p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeDeleteModal()">Annulla</button>
+      <button class="btn btn-danger" onclick="confirmDeleteProject()">Elimina definitivamente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export -->
+<div class="modal-overlay" id="modal-export">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">Export Selettivo</h2>
+        <p style="font-size:13px;color:var(--text-60);margin-top:4px;">Scegli cosa includere nel backup.</p>
+      </div>
+      <button class="modal-close" onclick="closeExportModal()">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <label class="checkbox-wrap"><input type="checkbox" value="brief" id="export-brief"><div class="checkbox-custom"></div><div class="checkbox-label">Brief (dati estratti da Groq)</div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="checklist" id="export-checklist"><div class="checkbox-custom"></div><div class="checkbox-label">Checklist (stato delle fasi)</div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="access" id="export-access"><div class="checkbox-custom"></div><div class="checkbox-label">Accessi (URL, username, password)</div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="assets" id="export-assets"><div class="checkbox-custom"></div><div class="checkbox-label">Assets (link, note, aggiornamenti brief)</div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="revisions" id="export-revisions"><div class="checkbox-custom"></div><div class="checkbox-label">Revisioni (tutti i round)</div></label>
+      <div class="divider"></div>
+      <label class="checkbox-wrap"><input type="checkbox" id="export-all" onchange="document.querySelectorAll('#modal-export input:not(#export-all)').forEach(c=>c.checked=this.checked)"><div class="checkbox-custom"></div><div class="checkbox-label" style="font-weight:600;color:var(--text-100);">Tutto il progetto</div></label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeExportModal()">Annulla</button>
+      <button class="btn btn-primary" onclick="confirmExport()">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 1v8M3 6l4 4 4-4M1 10v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
+        Scarica JSON
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Import -->
+<div class="modal-overlay" id="modal-import">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-header">
+      <div>
+        <h2 class="modal-title">Import Selettivo</h2>
+        <p style="font-size:13px;color:var(--text-60);margin-top:4px;">Importa sezioni da un file di backup.</p>
+      </div>
+      <button class="modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Seleziona file JSON</label>
+      <label class="drop-zone" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;">
+        <input type="file" accept=".json" onchange="handleImportFileSelect(event)" style="display:none;">
+        <div class="drop-zone-icon">📥</div>
+        <div class="drop-zone-text">Carica file backup .json</div>
+      </label>
+    </div>
+    <div id="import-preview" style="margin-top:16px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeImportModal()">Annulla</button>
+      <button class="btn btn-primary" onclick="confirmImport()">Importa Selezionato</button>
+    </div>
+  </div>
+</div>
+
+<!-- Aggiungi Link -->
+<div class="modal-overlay" id="modal-add-link">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div><h2 class="modal-title">Aggiungi Link</h2></div>
+      <button class="modal-close" onclick="closeAddLinkModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Etichetta</label>
+      <input class="form-input" id="new-link-label" type="text" placeholder="es. Google Drive, Figma, Hosting..."
+        onkeydown="if(event.key==='Enter') document.getElementById('new-link-url').focus()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">URL</label>
+      <input class="form-input" id="new-link-url" type="url" placeholder="https://..."
+        onkeydown="if(event.key==='Enter') confirmAddLink()">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAddLinkModal()">Annulla</button>
+      <button class="btn btn-primary" onclick="confirmAddLink()">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="../assets/js/core.js"></script>
+
+<!-- Scripts hokuto (ordine critico) -->
+<script src="js/data/checklist-phases.js"></script>
+<script src="js/data/revision-parser.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/projects.js"></script>
+<script src="js/export.js"></script>
+<script src="js/render/dashboard.js"></script>
+<script src="js/render/brief.js"></script>
+<script src="js/render/access.js"></script>
+<script src="js/render/checklist.js"></script>
+<script src="js/render/assets.js"></script>
+<script src="js/render/revisions.js"></script>
+<script src="js/router.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+// ── Bypassa setup screen di hokuto (API key gestita in Impostazioni) ──
+window.addEventListener('DOMContentLoaded', function() {
+  var setupView = document.getElementById('view-setup');
+  if (setupView) setupView.style.display = 'none';
+  var appDiv = document.getElementById('app');
+  if (appDiv) { appDiv.style.display = 'block'; appDiv.style.height = 'auto'; appDiv.style.overflow = 'visible'; }
+});
+
+// ── Aggiorna badge sidebar progetto ──
+function updateSidebarBadges() {
+  if (typeof getAllProjects !== 'function') return;
+  var projects = getAllProjects();
+  var attivi = projects.filter(function(p){ return p.status === 'attivo'; }).length;
+  var el = document.getElementById('sb-badge-progetti');
+  if (el) el.textContent = attivi > 0 ? attivi : '0';
+}
+
+// ── Aggiorna dot API in sidebar ──
+function updateApiStatusSidebar() {
+  var key = typeof storageGetGroqKey === 'function' ? storageGetGroqKey() : '';
+  var dot = document.getElementById('sb-api-dot');
+  var label = document.getElementById('sb-api-label');
+  if (dot && label) {
+    if (key && key.length > 10) {
+      dot.classList.remove('off');
+      label.textContent = 'Groq API configurata';
+    } else {
+      dot.classList.add('off');
+      label.textContent = 'API Key non configurata';
+    }
+  }
+}
+
+window.addEventListener('load', function() {
+  updateSidebarBadges();
+  updateApiStatusSidebar();
+});
+
+// Helper per il file import dalla scheda progetto
+function openImportModalFromFile(event) {
+  var projectId = typeof currentProjectId !== 'undefined' ? currentProjectId : null;
+  if (!projectId) return;
+  if (typeof openImportModal === 'function') openImportModal(projectId);
+  if (typeof handleImportFileSelect === 'function') handleImportFileSelect(event);
+}
+</script>
+
+</body>
+</html>
