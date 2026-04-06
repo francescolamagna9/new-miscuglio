@@ -311,30 +311,10 @@ document.addEventListener('keydown', e => {
 });
 
 // ─── INIT ───
+// DOMContentLoaded gestito dal bridge in progetti/index.html
+// app.js non fa init autonomo quando caricato in-app
 document.addEventListener('DOMContentLoaded', () => {
-  // Agency Hub: setup screen bypassato, API key gestita in Impostazioni
-  const key = storageGetGroqKey();
-  const setupEl = document.getElementById('view-setup');
-  const appEl   = document.getElementById('app');
-  if (setupEl) setupEl.style.display = 'none';
-  if (appEl)   { appEl.style.display = 'block'; appEl.style.height = 'auto'; appEl.style.overflow = 'visible'; }
-  updateApiStatus(!!key);
-  initRouter();
-
-  // New project brief file
-  const briefFileInput = document.getElementById('new-brief-file-input');
-  if (briefFileInput) {
-    briefFileInput.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) {
-        window._newBriefFile = file;
-        const label = document.getElementById('new-brief-file-name');
-        if (label) label.textContent = file.name;
-      }
-    });
-  }
-
-  // Settings link
+  // Settings link (ancora necessario)
   const settingsLinks = document.querySelectorAll('[href="#settings"]');
   settingsLinks.forEach(link => {
     link.addEventListener('click', () => renderSettings());

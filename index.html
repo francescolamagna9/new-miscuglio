@@ -122,36 +122,23 @@
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="sidebar-logo-icon">⚡</div>
-    <div>
-      <div class="sidebar-logo-name">Agency Hub</div>
-      <div class="sidebar-logo-sub">Centro Operativo</div>
-    </div>
-  </div>
-
+  <div class="sidebar-logo"><div class="sidebar-logo-icon">⚡</div><div><div class="sidebar-logo-name">Agency Hub</div><div class="sidebar-logo-sub">Centro Operativo</div></div></div>
   <div class="sidebar-section-label">Principale</div>
   <a class="nav-item active" href="index.html"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></a>
-
   <div class="sidebar-sep"></div>
   <div class="sidebar-section-label">Lavori</div>
-  <a class="nav-item" href="progetti/index.html"><span class="nav-icon">📁</span><span class="nav-label">Progetti</span><span class="nav-badge" id="sb-badge-progetti">0</span></a>
+  <a class="nav-item" href="progetti/index.html"><span class="nav-icon">📁</span><span class="nav-label">Progetti</span></a>
   <a class="nav-item" href="interventi/index.html"><span class="nav-icon">🔧</span><span class="nav-label">Interventi</span><span class="nav-badge" id="sb-badge-interventi">0</span></a>
-
   <div class="sidebar-sep"></div>
   <div class="sidebar-section-label">Strumenti</div>
   <a class="nav-item" href="schede-prodotto/index.html"><span class="nav-icon">✦</span><span class="nav-label">Schede Prodotto AI</span></a>
-  <a class="nav-item" href="archivio/index.html"><span class="nav-icon">📂</span><span class="nav-label">Archivio Progetti</span></a>
-
+  <a class="nav-item" href="archivio/index.html"><span class="nav-icon">🗃</span><span class="nav-label">Archivio Progetti</span></a>
   <div class="sidebar-sep"></div>
   <a class="nav-item" href="impostazioni/index.html"><span class="nav-icon">⚙️</span><span class="nav-label">Impostazioni</span></a>
-
   <div class="sidebar-footer">
-    <div class="sidebar-footer-ver">Agency Hub v3.0</div>
-    <div class="sidebar-footer-api" onclick="location.href='impostazioni/index.html'">
-      <span class="sidebar-footer-api-dot off" id="sb-api-dot"></span>
-      <span id="sb-api-label">API Key non configurata</span>
-    </div>
+    <div class="sidebar-footer-ver">Agency Hub v2.1</div>
+    <div style="margin-bottom:6px;padding:0 4px;"><span class="sync-indicator sync-idle" id="sync-indicator" title="Stato sincronizzazione">Non sincronizzato</span></div>
+    <div class="sidebar-footer-api" onclick="location.href='impostazioni/index.html'"><span class="sidebar-footer-api-dot off" id="sb-api-dot"></span><span id="sb-api-label">API Key non configurata</span></div>
   </div>
 </aside>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="sidebarClose()"></div>
@@ -183,7 +170,11 @@
       <div class="stat-value" id="stat-interventi">0</div>
       <div class="stat-label">Interventi aperti</div>
     </div>
-    
+    <div class="stat-card" style="--stat-line:linear-gradient(90deg,var(--accent-cyan),#7dd3fc); cursor:pointer;" onclick="location.href='archivio/index.html'">
+      <div class="stat-icon">🗃</div>
+      <div class="stat-value" id="stat-archivio">0</div>
+      <div class="stat-label">Archivio Progetti</div>
+    </div>
     <div class="stat-card" style="--stat-line:linear-gradient(90deg,var(--accent-pink),#fb7185); cursor:pointer;" onclick="location.href='impostazioni/index.html'">
       <div class="stat-icon">✦</div>
       <div class="stat-value" id="stat-schede">0</div>
@@ -233,14 +224,12 @@
           <div class="module-name">Schede Prodotto AI</div>
           <div class="module-desc">Genera schede SEO in secondi</div>
         </a>
-        
         <a class="module-card" href="archivio/index.html">
           <div class="module-glow" style="--glow:var(--accent-gold)"></div>
-          <div class="module-icon">📂</div>
+          <div class="module-icon">🗃</div>
           <div class="module-name">Archivio Progetti</div>
-          <div class="module-desc">Template, prompt e brief riutilizzabili</div>
+          <div class="module-desc">Storico e backup dei tuoi progetti</div>
         </a>
-        
       </div>
     </div>
 
@@ -268,7 +257,9 @@
 // ── INIT ─────────────────────────────────────────────────
 (function init() {
   var progetti   = store.get('hub_progetti', []);
+  var progettiHokuto = JSON.parse(localStorage.getItem('evolve_pm_projects') || '[]');
   var interventi = store.get('hub_interventi', []);
+  var archivio   = store.get('evolve_pm_projects', []);  // progetti hokuto
   var schede     = store.get('hub_stats', {}).schede || 0;
 
   var progettiAttivi   = progetti.filter(function(p) { return p.status !== 'completato'; });
@@ -276,10 +267,12 @@
 
   document.getElementById('stat-progetti').textContent   = progettiAttivi.length;
   document.getElementById('stat-interventi').textContent = interventiAperti.length;
+  if(document.getElementById('stat-archivio')) document.getElementById('stat-archivio').textContent = archivio.length;
   document.getElementById('stat-schede').textContent     = schede;
 
   document.getElementById('sb-badge-progetti').textContent   = progettiAttivi.length;
   document.getElementById('sb-badge-interventi').textContent = interventiAperti.length;
+  // badge skills rimosso
   document.getElementById('cnt-progetti').textContent        = progettiAttivi.length;
   document.getElementById('cnt-interventi').textContent      = interventiAperti.length;
 
@@ -300,6 +293,7 @@
         var interventiAperti2 = i2.filter(function(i) { return i.status !== 'done'; });
         document.getElementById('stat-progetti').textContent        = progettiAttivi2.length;
         document.getElementById('stat-interventi').textContent      = interventiAperti2.length;
+        if(document.getElementById('stat-archivio')) document.getElementById('stat-archivio').textContent = JSON.parse(localStorage.getItem('evolve_pm_projects')||'[]').length;
         document.getElementById('sb-badge-progetti').textContent    = progettiAttivi2.length;
         document.getElementById('sb-badge-interventi').textContent  = interventiAperti2.length;
         document.getElementById('cnt-progetti').textContent         = progettiAttivi2.length;
@@ -315,7 +309,7 @@
 // ── RENDER PROGETTI ───────────────────────────────────────
 function renderProgettiAttivi(list) {
   if (!list || !list.length) return;
-  // Usa PHASE_NAMES da core.js (sincronizzate con la checklist progetti)
+  // Usa PHASE_NAMES da core.js (8 fasi, sincronizzate con ROADMAP_TEMPLATE)
   document.getElementById('progetti-list').innerHTML = list.slice(0,3).map(function(p) {
     var done  = (p.checklist||[]).filter(function(c) { return c.done; }).length;
     var total = (p.checklist||[]).length || PHASE_NAMES.length;

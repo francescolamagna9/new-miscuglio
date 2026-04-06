@@ -109,36 +109,23 @@
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="sidebar-logo-icon">⚡</div>
-    <div>
-      <div class="sidebar-logo-name">Agency Hub</div>
-      <div class="sidebar-logo-sub">Centro Operativo</div>
-    </div>
-  </div>
-
+  <div class="sidebar-logo"><div class="sidebar-logo-icon">⚡</div><div><div class="sidebar-logo-name">Agency Hub</div><div class="sidebar-logo-sub">Centro Operativo</div></div></div>
   <div class="sidebar-section-label">Principale</div>
   <a class="nav-item" href="../index.html"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></a>
-
   <div class="sidebar-sep"></div>
   <div class="sidebar-section-label">Lavori</div>
-  <a class="nav-item" href="../progetti/index.html"><span class="nav-icon">📁</span><span class="nav-label">Progetti</span><span class="nav-badge" id="sb-badge-progetti">0</span></a>
+  <a class="nav-item" href="../progetti/index.html"><span class="nav-icon">📁</span><span class="nav-label">Progetti</span></a>
   <a class="nav-item" href="../interventi/index.html"><span class="nav-icon">🔧</span><span class="nav-label">Interventi</span><span class="nav-badge" id="sb-badge-interventi">0</span></a>
-
   <div class="sidebar-sep"></div>
   <div class="sidebar-section-label">Strumenti</div>
   <a class="nav-item" href="../schede-prodotto/index.html"><span class="nav-icon">✦</span><span class="nav-label">Schede Prodotto AI</span></a>
-  <a class="nav-item" href="../archivio/index.html"><span class="nav-icon">📂</span><span class="nav-label">Archivio Progetti</span></a>
-
+  <a class="nav-item" href="../archivio/index.html"><span class="nav-icon">🗃</span><span class="nav-label">Archivio Progetti</span></a>
   <div class="sidebar-sep"></div>
-  <a class="nav-item  active" href="../impostazioni/index.html"><span class="nav-icon">⚙️</span><span class="nav-label">Impostazioni</span></a>
-
+  <a class="nav-item active" href="../impostazioni/index.html"><span class="nav-icon">⚙️</span><span class="nav-label">Impostazioni</span></a>
   <div class="sidebar-footer">
-    <div class="sidebar-footer-ver">Agency Hub v3.0</div>
-    <div class="sidebar-footer-api" onclick="location.href='../impostazioni/index.html'">
-      <span class="sidebar-footer-api-dot off" id="sb-api-dot"></span>
-      <span id="sb-api-label">API Key non configurata</span>
-    </div>
+    <div class="sidebar-footer-ver">Agency Hub v2.1</div>
+    <div style="margin-bottom:6px;padding:0 4px;"><span class="sync-indicator sync-idle" id="sync-indicator" title="Stato sincronizzazione">Non sincronizzato</span></div>
+    <div class="sidebar-footer-api" onclick="location.href='../impostazioni/index.html'"><span class="sidebar-footer-api-dot off" id="sb-api-dot"></span><span id="sb-api-label">API Key non configurata</span></div>
   </div>
 </aside>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="sidebarClose()"></div>
@@ -287,7 +274,7 @@
         <div style="margin-bottom:18px;">
           <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:14px;margin-bottom:6px;">⬇ Esporta Backup</div>
           <div style="font-size:13px;color:var(--text-60);margin-bottom:12px;line-height:1.6;">
-            Scarica un file JSON con tutti i tuoi dati: progetti, interventi, skill, archivio, roadmap e impostazioni. Tienilo al sicuro.
+            Scarica un file JSON con tutti i tuoi dati: progetti, interventi, archivio e impostazioni. Tienilo al sicuro.
           </div>
           <button class="btn btn-primary" onclick="exportData()">⬇ Scarica backup.json</button>
         </div>
@@ -563,7 +550,7 @@ async function clearSection(key) {
 async function clearAll() {
   if (!confirm('ATTENZIONE: eliminare TUTTI i dati dell\'hub?\n\nProgetti, interventi, skill, archivio e roadmap saranno cancellati.\n\nHai fatto un backup?')) return;
   if (!confirm('Sei sicuro? Non si torna indietro.')) return;
-  const keysToReset = ['hub_progetti','hub_interventi','hub_skills','hub_archivio','hub_roadmap','hub_activity','hub_stats'];
+  const keysToReset = ['hub_progetti','hub_interventi','hub_archivio','hub_activity','hub_stats'];
   // FIX: prima azzera localmente, poi push su GitHub (non il contrario)
   keysToReset.forEach(k => store.set(k, []));
   if (typeof GitHubSync !== 'undefined' && GitHubSync.isConfigured()) {
