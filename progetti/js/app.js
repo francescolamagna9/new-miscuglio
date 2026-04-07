@@ -185,12 +185,22 @@ async function handleGlobalImport(event) {
 }
 
 // ─── EXPORT/IMPORT PROJECT ───
+// ─── EXPORT MODAL ───
 function openExportModal(projectId) {
-  document.getElementById('modal-export').classList.add('open');
-  document.getElementById('modal-export').dataset.projectId = projectId;
-  document.querySelectorAll('#modal-export input[type="checkbox"]').forEach(c => {
-    c.checked = false;
-  });
+  if (!projectId) { showToast('Nessun progetto selezionato', 'warn'); return; }
+  const project = getProject(projectId);
+  if (!project) { showToast('Progetto non trovato', 'error'); return; }
+
+  const modal = document.getElementById('modal-export');
+  modal.classList.add('open');
+  modal.dataset.projectId = projectId;
+
+  // Mostra nome progetto nel modal
+  const nameEl = document.getElementById('export-project-name');
+  if (nameEl) nameEl.textContent = '📁 ' + project.name;
+
+  // Tutte le checkbox selezionate di default
+  modal.querySelectorAll('input[type="checkbox"]').forEach(c => { c.checked = true; });
 }
 
 function closeExportModal() {
@@ -200,107 +210,165 @@ function closeExportModal() {
 function confirmExport() {
   const modal = document.getElementById('modal-export');
   const projectId = modal.dataset.projectId;
-  const allChecked = document.getElementById('export-all').checked;
-  let sections = [];
+  if (!projectId) { showToast('ID progetto mancante', 'error'); return; }
 
-  if (allChecked) {
-    sections = ['brief', 'checklist', 'access', 'assets', 'revisions'];
-  } else {
-    document.querySelectorAll('#modal-export input[type="checkbox"]:not(#export-all):checked').forEach(c => {
-      sections.push(c.value);
-    });
-  }
+  const sections = [];
+  modal.querySelectorAll('input[type="checkbox"]:not(#export-all):checked')
+    .forEach(c => sections.push(c.value));
 
   if (!sections.length) { showToast('Seleziona almeno una sezione', 'warn'); return; }
-  exportSelective(projectId, sections);
-  closeExportModal();
-  showToast('Export completato!', 'success');
+
+  try {
+    exportSelective(projectId, sections);
+    closeExportModal();
+    showToast('Export completato! File scaricato.', 'success');
+  } catch(e) {
+    showToast('Errore export: ' + e.message, 'error');
+  }
 }
 
+// ─── IMPORT MODAL ───
 function openImportModal(projectId) {
-  document.getElementById('modal-import').classList.add('open');
-  document.getElementById('modal-import').dataset.projectId = projectId;
-  document.getElementById('import-preview').innerHTML = '';
-  window._importData = null;
+  if (!projectId) { showToast('Nessun progetto selezionato', 'warn'); return; }
+  const modal = document.getElementById('modal-import');
+  modal.classList.add('open');
+  modal.dataset.projectId = projectId;
+  importResetFile();
 }
 
 function closeImportModal() {
   document.getElementById('modal-import').classList.remove('open');
+  importResetFile();
+}
+
+function importResetFile() {
   window._importData = null;
+  const preview = document.getElementById('import-preview');
+  if (preview) preview.innerHTML = '';
+  const loaded = document.getElementById('import-file-loaded');
+  if (loaded) loaded.style.display = 'none';
+  const dropZone = document.getElementById('import-drop-zone');
+  if (dropZone) dropZone.style.display = '';
+  const fileInput = document.getElementById('import-file-input');
+  if (fileInput) fileInput.value = '';
+  const confirmBtn = document.getElementById('btn-confirm-import');
+  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.style.opacity = '0.4'; }
+}
+
+function importHandleDrop(event) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('over');
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  if (!file.name.endsWith('.json')) { showToast('Carica un file .json', 'warn'); return; }
+  processImportFile(file);
 }
 
 async function handleImportFileSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
+  await processImportFile(file);
+  event.target.value = '';
+}
+
+async function processImportFile(file) {
+  // Feedback visivo: mostra nome file
+  const dropZone = document.getElementById('import-drop-zone');
+  const loaded   = document.getElementById('import-file-loaded');
+  const nameLbl  = document.getElementById('import-file-name');
+  if (dropZone) dropZone.style.display = 'none';
+  if (loaded)  { loaded.style.display = 'flex'; }
+  if (nameLbl) nameLbl.textContent = file.name;
+
   try {
     const data = await readImportFile(file);
     window._importData = data;
     renderImportPreview(data);
-  } catch (err) {
-    showToast('Errore: ' + err.message, 'error');
+
+    // Abilita il pulsante conferma
+    const confirmBtn = document.getElementById('btn-confirm-import');
+    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.style.opacity = ''; }
+  } catch(err) {
+    showToast('Errore lettura file: ' + err.message, 'error');
+    importResetFile();
   }
-  event.target.value = '';
 }
 
 function renderImportPreview(data) {
   const preview = document.getElementById('import-preview');
-  if (!data.sections) { preview.innerHTML = '<p style="color:var(--warn);font-size:13px;">Formato non valido</p>'; return; }
+  if (!preview) return;
 
-  let html = `<div style="margin-bottom:12px;"><span style="font-size:13px;color:var(--text2);">Progetto: <strong>${escHtml(data.projectName)}</strong></span></div>`;
-  html += `<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Scegli le sezioni da importare:</div>`;
+  if (!data || !data.sections) {
+    preview.innerHTML = `<div style="padding:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.18);border-radius:var(--r-md);font-size:13px;color:#fca5a5;">
+      ✕ Formato non valido. Assicurati di usare un backup esportato da Agency Hub.
+    </div>`;
+    return;
+  }
 
-  const sectionNames = { brief: 'Brief', checklist: 'Checklist', access: 'Accessi', assets: 'Assets & Link', revisions: 'Revisioni' };
+  const sectionNames = {
+    brief: 'Brief', checklist: 'Checklist',
+    access: 'Accessi WP', assets: 'Assets & Link', revisions: 'Revisioni'
+  };
+
+  let html = `<div style="padding:10px 12px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);border-radius:var(--r-md);margin-bottom:12px;">
+    <div style="font-size:12px;color:var(--text-35);margin-bottom:2px;">Backup di</div>
+    <div style="font-size:14px;font-weight:700;color:var(--text-100);">${escHtml(data.projectName || 'Progetto sconosciuto')}</div>
+    ${data.exportedAt ? `<div style="font-size:11px;color:var(--text-35);margin-top:3px;">Esportato il ${new Date(data.exportedAt).toLocaleString('it-IT')}</div>` : ''}
+  </div>`;
+
+  html += `<div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-35);margin-bottom:8px;">Sezioni disponibili</div>`;
+  html += `<div style="display:flex;flex-direction:column;gap:6px;">`;
+
   Object.keys(data.sections).forEach(key => {
-    const sec = data.sections[key];
-    const date = sec.updatedAt ? new Date(sec.updatedAt).toLocaleString('it-IT') : 'N/A';
-    html += `
-      <label class="checkbox-wrap" style="margin-bottom:8px;">
-        <input type="checkbox" class="import-section-check" value="${key}" checked>
-        <div class="checkbox-custom"></div>
-        <div class="checkbox-label">${sectionNames[key] || key} <span style="color:var(--text3);font-size:11px;">(${date})</span></div>
-      </label>`;
+    const sec  = data.sections[key];
+    const date = sec.updatedAt ? new Date(sec.updatedAt).toLocaleString('it-IT') : null;
+    html += `<label class="checkbox-wrap">
+      <input type="checkbox" class="import-section-check" value="${escHtml(key)}" checked>
+      <div class="checkbox-custom"></div>
+      <div class="checkbox-label">
+        ${escHtml(sectionNames[key] || key)}
+        ${date ? `<span style="color:var(--text-35);font-size:11px;margin-left:6px;">${date}</span>` : ''}
+      </div>
+    </label>`;
   });
 
+  html += `</div>`;
   preview.innerHTML = html;
 }
 
 function confirmImport() {
   const modal = document.getElementById('modal-import');
   const projectId = modal.dataset.projectId;
+
   if (!window._importData) { showToast('Carica prima un file', 'warn'); return; }
+  if (!projectId) { showToast('ID progetto mancante', 'error'); return; }
+
   const sections = [];
-  document.querySelectorAll('.import-section-check:checked').forEach(c => sections.push(c.value));
+  document.querySelectorAll('.import-section-check:checked')
+    .forEach(c => sections.push(c.value));
+
   if (!sections.length) { showToast('Seleziona almeno una sezione', 'warn'); return; }
-  importSelective(projectId, window._importData, sections);
-  closeImportModal();
-  const project = getProject(projectId);
-  renderTabContent(project, currentTab);
-  showToast('Import completato!', 'success');
+
+  try {
+    importSelective(projectId, window._importData, sections);
+    closeImportModal();
+    const project = getProject(projectId);
+    if (project) renderTabContent(project, currentTab);
+    showToast(`Import completato: ${sections.length} sezioni ripristinate!`, 'success');
+  } catch(e) {
+    showToast('Errore import: ' + e.message, 'error');
+  }
 }
 
 // ─── NEW PROJECT ───
-async function confirmNewProject() {
-  const nameInput = document.getElementById('new-project-name');
-  const clientInput = document.getElementById('new-project-client');
-  const name = nameInput.value.trim();
-  const client = clientInput.value.trim();
-
-  if (!name) { showToast('Inserisci il nome del progetto', 'warn'); nameInput.focus(); return; }
-
-  const project = createProject({ name, client });
-  closeNewProjectModal();
-  showToast('Progetto creato!', 'success');
-
-  if (window._newBriefFile) {
-    navigateToProject(project.id, 'brief');
-    setTimeout(async () => {
-      const fakeEvent = { target: { files: [window._newBriefFile], value: '' } };
-      await handleBriefUpload(fakeEvent, project.id);
-      window._newBriefFile = null;
-    }, 300);
-  } else {
-    navigateToProject(project.id, 'brief');
-  }
+// confirmNewProject è gestita dal bridge script in progetti/index.html
+// (form ricco con logo, dominio, tipo, project bible)
+// Qui lasciamo solo openNewProjectModal e closeNewProjectModal come fallback
+function openNewProjectModalFallback() {
+  document.getElementById('modal-new-project').classList.add('open');
+}
+function closeNewProjectModal() {
+  document.getElementById('modal-new-project').classList.remove('open');
 }
 
 // ─── KEYBOARD SHORTCUTS ───

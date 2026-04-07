@@ -31,9 +31,9 @@ function exportSelective(projectId, sections) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   const safeName = project.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  const date = new Date().toLocaleDateString('it-IT').replace(/\//g, '-');
+  const date = new Date().toISOString().slice(0,10); // YYYY-MM-DD
   a.href = url;
-  a.download = `evolve-backup-${safeName}-${date}.json`;
+  a.download = `agency-hub-${safeName}-${date}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -50,7 +50,7 @@ function exportAllProjects() {
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const date = new Date().toLocaleDateString('it-IT').replace(/\//g, '-');
+  const date = new Date().toISOString().slice(0,10); // YYYY-MM-DD
   a.href = url;
   a.download = `evolve-full-backup-${date}.json`;
   a.click();

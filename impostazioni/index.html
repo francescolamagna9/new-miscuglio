@@ -486,25 +486,31 @@ async function manualSync() {
 
 // ── EXPORT ───────────────────────────────────────────────
 function exportData() {
+  // Legge progetti hokuto (evolve_pm_projects) — source of truth principale
+  function safeGet(key) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+    catch(e) { return null; }
+  }
+
   const backup = {
-    version:    '2.0',
+    version:    '3.0',
     exportedAt: new Date().toISOString(),
     data: {
-      hub_progetti:   store.get('hub_progetti',   []),
+      // Progetti hokuto (modulo Progetti avanzato)
+      evolve_pm_projects: safeGet('evolve_pm_projects') || [],
+      // Dati hub
       hub_interventi: store.get('hub_interventi', []),
-      hub_skills:     store.get('hub_skills',     []),
       hub_archivio:   store.get('hub_archivio',   []),
-      hub_roadmap:    store.get('hub_roadmap',     null),
       hub_activity:   store.get('hub_activity',   []),
       hub_stats:      store.get('hub_stats',       {}),
     }
     // Note: API key e token GitHub NON vengono esportati per sicurezza
   };
 
-  const json     = JSON.stringify(backup, null, 2);
-  const date     = new Date().toLocaleDateString('it').replace(/\//g,'-');
+  const json = JSON.stringify(backup, null, 2);
+  const date = new Date().toLocaleDateString('it').replace(/\//g,'-');
   downloadFile(`agency-hub-backup-${date}.json`, json, 'application/json');
-  toast('Backup esportato!', 'ok');
+  toast('Backup esportato (' + (backup.data.evolve_pm_projects.length) + ' progetti)!', 'ok');
   logActivity('💾', 'Backup dati esportato');
 }
 
@@ -512,7 +518,7 @@ function exportData() {
 function importData(input) {
   const file = input.files[0]; if (!file) return;
 
-  if (!confirm('Importare questo backup? Tutti i dati attuali verranno sostituiti.')) {
+  if (!confirm('Importare questo backup? I dati attuali verranno sostituiti.')) {
     input.value = ''; return;
   }
 
@@ -522,23 +528,34 @@ function importData(input) {
       const backup = JSON.parse(e.target.result);
       if (!backup.data) throw new Error('File non valido — struttura non riconosciuta');
 
-      // Ripristina tutti i dati
       const d = backup.data;
-      if (d.hub_progetti)   store.set('hub_progetti',   d.hub_progetti);
+      let progettiCount = 0;
+
+      // Progetti hokuto (v3.0+)
+      if (d.evolve_pm_projects && Array.isArray(d.evolve_pm_projects)) {
+        localStorage.setItem('evolve_pm_projects', JSON.stringify(d.evolve_pm_projects));
+        progettiCount = d.evolve_pm_projects.length;
+      }
+      // Compatibilità backup v2.0 (vecchi hub_progetti)
+      if (d.hub_progetti && Array.isArray(d.hub_progetti) && !progettiCount) {
+        store.set('hub_progetti', d.hub_progetti);
+        progettiCount = d.hub_progetti.length;
+      }
+
+      // Altri dati hub
       if (d.hub_interventi) store.set('hub_interventi', d.hub_interventi);
-      if (d.hub_skills)     store.set('hub_skills',     d.hub_skills);
       if (d.hub_archivio)   store.set('hub_archivio',   d.hub_archivio);
-      if (d.hub_roadmap)    store.set('hub_roadmap',    d.hub_roadmap);
       if (d.hub_activity)   store.set('hub_activity',   d.hub_activity);
-      if (d.hub_stats)      store.set('hub_stats',      d.hub_stats);
+      if (d.hub_stats)      store.set('hub_stats',       d.hub_stats);
 
-      const exported = backup.exportedAt ? new Date(backup.exportedAt).toLocaleDateString('it') : 'data sconosciuta';
-      document.getElementById('import-status').textContent = '✓ Importato (backup del ' + exported + ')';
+      const exported = backup.exportedAt
+        ? new Date(backup.exportedAt).toLocaleDateString('it') : 'data sconosciuta';
+      document.getElementById('import-status').textContent =
+        '✓ Importato: ' + progettiCount + ' progetti (backup del ' + exported + ')';
       document.getElementById('import-status').style.color = 'var(--accent-green)';
-      toast('Backup importato con successo!', 'ok');
+      toast('Backup importato: ' + progettiCount + ' progetti ripristinati!', 'ok');
 
-      // Ricarica stats
-      setTimeout(() => location.reload(), 1200);
+      setTimeout(() => location.reload(), 1400);
     } catch(err) {
       document.getElementById('import-status').textContent = '✕ ' + err.message;
       document.getElementById('import-status').style.color = '#f87171';
@@ -563,13 +580,13 @@ async function clearSection(key) {
 async function clearAll() {
   if (!confirm('ATTENZIONE: eliminare TUTTI i dati dell\'hub?\n\nProgetti, interventi, skill, archivio e roadmap saranno cancellati.\n\nHai fatto un backup?')) return;
   if (!confirm('Sei sicuro? Non si torna indietro.')) return;
-  const keysToReset = ['hub_progetti','hub_interventi','hub_skills','hub_archivio','hub_roadmap','hub_activity','hub_stats'];
-  // FIX: prima azzera localmente, poi push su GitHub (non il contrario)
+  const keysToReset = ['hub_interventi','hub_archivio','hub_activity','hub_stats'];
   keysToReset.forEach(k => store.set(k, []));
+  // Reset progetti hokuto
+  localStorage.removeItem('evolve_pm_projects');
   if (typeof GitHubSync !== 'undefined' && GitHubSync.isConfigured()) {
     try { await GitHubSync.pushAll(); } catch(e) { console.warn('Reset sync failed:', e.message); }
   }
-  // Ora rimuovi dal localStorage
   keysToReset.forEach(k => store.remove(k));
   toast('Hub resettato', 'info');
   setTimeout(() => location.href = '../index.html', 1000);

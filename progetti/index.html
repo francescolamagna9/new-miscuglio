@@ -312,23 +312,24 @@
   <div class="modal">
     <div class="modal-header">
       <div>
-        <p class="modal-title">Export Selettivo</p>
-        <p>Scegli cosa includere nel backup.</p>
+        <p class="modal-title">Export Progetto</p>
+        <p>Scegli cosa includere nel backup JSON.</p>
       </div>
       <button class="modal-close" onclick="closeExportModal()">✕</button>
     </div>
+    <div id="export-project-name" style="font-size:13px;font-weight:600;color:var(--accent-blue-soft);margin-bottom:14px;padding:8px 12px;background:rgba(59,130,246,0.07);border-radius:var(--r-md);border:1px solid rgba(59,130,246,0.15);"></div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <label class="checkbox-wrap"><input type="checkbox" value="brief" id="export-brief"><div class="checkbox-custom"></div><div class="checkbox-label">Brief (dati estratti da Groq)</div></label>
-      <label class="checkbox-wrap"><input type="checkbox" value="checklist" id="export-checklist"><div class="checkbox-custom"></div><div class="checkbox-label">Checklist (stato delle fasi)</div></label>
-      <label class="checkbox-wrap"><input type="checkbox" value="access" id="export-access"><div class="checkbox-custom"></div><div class="checkbox-label">Accessi (URL, username, password)</div></label>
-      <label class="checkbox-wrap"><input type="checkbox" value="assets" id="export-assets"><div class="checkbox-custom"></div><div class="checkbox-label">Assets (link, note, aggiornamenti brief)</div></label>
-      <label class="checkbox-wrap"><input type="checkbox" value="revisions" id="export-revisions"><div class="checkbox-custom"></div><div class="checkbox-label">Revisioni (tutti i round)</div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="brief" id="export-brief" checked><div class="checkbox-custom"></div><div class="checkbox-label">Brief <span style="color:var(--text-35);font-size:11px;">— dati estratti dal Project Bible</span></div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="checklist" id="export-checklist" checked><div class="checkbox-custom"></div><div class="checkbox-label">Checklist <span style="color:var(--text-35);font-size:11px;">— stato avanzamento fasi</span></div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="access" id="export-access" checked><div class="checkbox-custom"></div><div class="checkbox-label">Accessi WP <span style="color:var(--text-35);font-size:11px;">— URL, username, password</span></div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="assets" id="export-assets" checked><div class="checkbox-custom"></div><div class="checkbox-label">Assets & Link <span style="color:var(--text-35);font-size:11px;">— link, note, aggiornamenti</span></div></label>
+      <label class="checkbox-wrap"><input type="checkbox" value="revisions" id="export-revisions" checked><div class="checkbox-custom"></div><div class="checkbox-label">Revisioni <span style="color:var(--text-35);font-size:11px;">— tutti i round</span></div></label>
       <div class="divider"></div>
-      <label class="checkbox-wrap">
-        <input type="checkbox" id="export-all"
+      <label class="checkbox-wrap" style="border-color:rgba(59,130,246,0.25)">
+        <input type="checkbox" id="export-all" checked
           onchange="document.querySelectorAll('#modal-export input:not(#export-all)').forEach(c=>c.checked=this.checked)">
         <div class="checkbox-custom"></div>
-        <div class="checkbox-label" style="font-weight:600;color:var(--text-100)">Tutto il progetto</div>
+        <div class="checkbox-label" style="font-weight:600;color:var(--text-100)">Seleziona / Deseleziona tutto</div>
       </label>
     </div>
     <div class="modal-footer">
@@ -349,22 +350,45 @@
     <div class="modal-header">
       <div>
         <p class="modal-title">Import Selettivo</p>
-        <p>Importa sezioni da un file di backup.</p>
+        <p>Importa sezioni da un file di backup <code style="font-size:11px;color:var(--accent-blue-soft)">.json</code></p>
       </div>
       <button class="modal-close" onclick="closeImportModal()">✕</button>
     </div>
+
+    <!-- Drop zone robusta: l'input NON è display:none ma opacity:0 position:absolute -->
     <div class="form-group">
-      <label class="form-label">Seleziona file JSON</label>
-      <label class="upload-zone" style="cursor:pointer">
-        <input type="file" accept=".json" onchange="handleImportFileSelect(event)" style="display:none">
-        <div class="drop-zone-icon">📥</div>
-        <div class="drop-zone-text">Carica file backup .json</div>
-      </label>
+      <label class="form-label">File backup</label>
+      <div id="import-drop-zone" class="brief-upload"
+        ondragover="event.preventDefault();this.classList.add('over')"
+        ondragleave="this.classList.remove('over')"
+        ondrop="importHandleDrop(event)"
+        onclick="document.getElementById('import-file-input').click()">
+        <div class="brief-upload-icon" id="import-drop-icon">📥</div>
+        <div class="brief-upload-text" id="import-drop-text">Clicca o trascina il file .json qui</div>
+        <div class="brief-upload-hint">Backup esportato da Agency Hub</div>
+      </div>
+      <!-- Input visivamente nascosto ma funzionante -->
+      <input type="file" id="import-file-input" accept=".json"
+        style="position:absolute;opacity:0;width:0;height:0;pointer-events:none"
+        onchange="handleImportFileSelect(event)">
+      <!-- Feedback file caricato -->
+      <div id="import-file-loaded" class="brief-loaded" style="display:none">
+        <span class="brief-loaded-icon">📄</span>
+        <span class="brief-loaded-name" id="import-file-name">—</span>
+        <span class="brief-loaded-remove" onclick="importResetFile()">✕ Cambia file</span>
+      </div>
     </div>
-    <div id="import-preview" style="margin-top:16px"></div>
+
+    <div id="import-preview" style="margin-top:4px"></div>
+
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeImportModal()">Annulla</button>
-      <button class="btn btn-primary" onclick="confirmImport()">Importa Selezionato</button>
+      <button class="btn btn-primary" id="btn-confirm-import" onclick="confirmImport()" disabled style="opacity:0.4">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M7 9V1M3 5l4-4 4 4M1 10v2a1 1 0 001 1h10a1 1 0 001-1v-2"/>
+        </svg>
+        Importa Selezionato
+      </button>
     </div>
   </div>
 </div>
@@ -467,12 +491,23 @@ window.addEventListener('load', () => {
   refreshIntervBadge();
 });
 
-// Helper import da file header
-function openImportModalFromFile(event) {
+// Helper import da file header (pulsante Import nella scheda progetto)
+// Apre il modal e processa il file immediatamente
+async function openImportModalFromFile(event) {
   const id = typeof currentProjectId !== 'undefined' ? currentProjectId : null;
-  if (!id) return;
+  if (!id) { showToast('Nessun progetto aperto', 'warn'); return; }
+
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = ''; // reset input
+
+  // Apri modal e imposta projectId
   if (typeof openImportModal === 'function') openImportModal(id);
-  if (typeof handleImportFileSelect === 'function') handleImportFileSelect(event);
+
+  // Processa il file direttamente (non passa per handleImportFileSelect che legge da un altro input)
+  if (typeof processImportFile === 'function') {
+    await processImportFile(file);
+  }
 }
 
 /* ── MODAL NUOVO PROGETTO — logica ricca webappfra ───────────────── */
